@@ -1,0 +1,21 @@
+# Dependency directories
+**/node_modules
+/.pnp
+.pnp.js
+
+# Production builds
+**/dist
+**/build
+
+# Environment variables & local secrets (Crucial!)
+.env
+.env.local
+.env.*.local
+**/tempo-client/.env
+**/tempo-server/.env
+
+# Editor files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
