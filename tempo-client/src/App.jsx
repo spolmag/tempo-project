@@ -5,7 +5,9 @@ import StaffLoginPage from "./components/StaffLoginPage";
 
 export default function App() {
   const [lang, setLang] = useState("th");
-  const [currentRoute, setCurrentRoute] = useState("home");
+  // const [currentRoute, setCurrentRoute] = useState("home");
+  // Tempolary
+  const [currentRoute, setCurrentRoute] = useState("dashboard");
 
   // Simple view switcher
   const renderPage = () => {

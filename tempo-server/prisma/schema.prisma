@@ -21,13 +21,13 @@ model User {
   email         String      @unique
   passwordHash  String
   fullNameTh    String
-  fullNameEh    String
+  fullNameEn    String
   addressTh     String?
   addressEn     String?
   dateOfBirth   DateTime?
   phone         String?
   lineId        String?
-  Role          Role        @default(STAFF)
+  role          Role        @default(STAFF)
   isActive      Boolean     @default(true)
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
