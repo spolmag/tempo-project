@@ -1,12 +1,16 @@
-import React, { useState, useTransition } from "react";
+import React, { useState } from "react";
+import { login } from "../lib/auth.js";
 
-export default function StaffLoginPage({ lang = "th" }) {
+export default function StaffLoginPage({ lang = "th", onLoginSuccess }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const t = {
     th: {
-      badge: "ระบบจัดการภายใน",
+      badge: "ระบบจัดการงานสาขา",
       title: "เข้าสู่ระบบสำหรับพนักงาน",
       subTitle: "กรุณาระบุอีเมลและรหัสผ่าน",
       emailLabel: "อีเมล",
@@ -14,7 +18,13 @@ export default function StaffLoginPage({ lang = "th" }) {
       placeholderEmail: "staff@tempo.com",
       placeholderPassword: "••••••••",
       submitBtn: "เข้าสู่ระบบ",
+      submittingBtn: "กำลังเข้าสู่ระบบ...",
+      successMsg: "เข้าสู่ระบบสำเร็จ กำลังเข้าหน้าการจัดการสาขา...",
+      errorMsg: "อีเมลหรือรหัสผ่านไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง",
       helpText: "ลืมรหัสผ่านหรือต้องการความช่วยเหลือ ติดต่อแอดมินระบบ",
+      requiredError: "กรุณากรอกข้อมูลให้ครบถ้วน",
+      disabledMsg: "บัญชีนี้ถูกระงับการใช้งาน กรุณาติดต่อแอดมินระบบ",
+      serverErrorMsg: "ระบบขัดข้อง กรุณาลองใหม่อีกครั้ง",
     },
     en: {
       badge: "INTERNAL PORTAL",
@@ -25,14 +35,52 @@ export default function StaffLoginPage({ lang = "th" }) {
       placeholderEmail: "staff@tempo.com",
       placeholderPassword: "••••••••",
       submitBtn: "Sign In",
+      submittingBtn: "Signing in...",
+      successMsg: "Login seccessful! Redirecting to main staff dashboard....",
+      errorMsg: "Invalid email or password. Please try again.",
       helpText: "Forgot password or need assistance? Contact system admin.",
+      requiredError: "Please fill out all field.",
+      disabledMsg:
+        "This account has been disabled. Please contact the system admin.",
+      serverErrorMsg: "Something went wrong. Please try again.",
     },
   }[lang];
 
-  const handleLogin = (e) => {
+  async function handleLogin(e) {
     e.preventDefault();
-    alert(lang === "th" ? "เข้าสู่ระบบสำเร็จ" : "Login successful");
-  };
+    setError("");
+    setSuccess("");
+
+    if (!email.trim() || !password) {
+      setError(t.requiredError);
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      await login(email, password);
+      setSuccess(t.successMsg);
+
+      setTimeout(() => {
+        if (onLoginSuccess) {
+          onLoginSuccess();
+        } else {
+          window.location.href = "/";
+        }
+      }, 1800);
+    } catch (err) {
+      if (err.status === 401) {
+        setError(t.errorMsg);
+      } else if (err.status === 403) {
+        setError(t.disabledMsg);
+      } else {
+        setError(t.serverErrorMsg); // 500, or the server can't be reached
+      }
+
+      setLoading(false);
+    }
+  }
 
   return (
     <div className="min-h-[85vh] bg-slate-950 text-slate-100 flex items-center justify-center px-4 py-8">
@@ -45,17 +93,17 @@ export default function StaffLoginPage({ lang = "th" }) {
           <p className="text-slate-400 text-sm">{t.subTitle}</p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-5">
+        <form onSubmit={handleLogin} noValidate className="space-y-5">
           <div>
             <label className="block text-xs font-medium text-slate-300 uppercase tracking-wider mb-2">
-              {t.emailLabel}
+              {t.emailLabel} <span className="text-red-500 font-bold">*</span>
             </label>
             <input
               type="email"
-              required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder={t.placeholderEmail}
+              disabled={success}
               className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-amber-500 transition"
             />
           </div>
@@ -63,22 +111,36 @@ export default function StaffLoginPage({ lang = "th" }) {
           <div>
             <label className="block text-xs font-medium text-slate-300 uppercase tracking-wider mb-2">
               {t.passwordLabel}
+              <span className="text-red-500 font-bold"> *</span>
             </label>
             <input
               type="password"
-              required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder={t.placeholderPassword}
+              disabled={success}
               className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-amber-500 transition"
             />
           </div>
 
+          {error && (
+            <div className="mb-5 bg-red-950/50 border border-red-800/60 text-red-300 text-sm p-3 rounded-xl text-center">
+              {error}
+            </div>
+          )}
+
+          {success && (
+            <div className="mb-5 bg-emerald-950/50 border border-emerald-800/60 text-emerald-300 text-sm p-3 rounded-xl text-center">
+              {success}
+            </div>
+          )}
+
           <button
             type="submit"
+            disabled={loading || success}
             className="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-3 px-4 rounded-xl transition shadow-lg shadow-amber-500/10"
           >
-            {t.submitBtn}
+            {loading && !success ? t.submittingBtn : t.submitBtn}
           </button>
         </form>
 

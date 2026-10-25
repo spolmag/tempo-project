@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
-export default function Navbar({ lang, setLang, onNavigate }) {
+export default function Navbar({ lang, setLang, onNavigate, user, onLogout }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef(null);
 
   const t = {
     th: {
@@ -10,15 +12,81 @@ export default function Navbar({ lang, setLang, onNavigate }) {
       products: "สินค้า",
       about: "เกี่ยวกับเรา",
       login: "สำหรับพนักงาน",
+      changePassword: "เปลี่ยนรหัสผ่าน",
+      logout: "ออกจากระบบ",
     },
     en: {
       home: "Home",
       courses: "Courses",
       products: "Products",
       about: "About",
-      login: "Staff Protal",
+      login: "Staff Portal",
+      changePassword: "Change Password",
+      logout: "Logout",
     },
   }[lang];
+
+  // Key match the values of Prisma Role enum
+  const roleLabels = {
+    th: {
+      ADMIN: "ผู้ดูแลระบบ",
+      MANAGER: "ผู้จัดการ",
+      STAFF: "เจ้าหน้าที่",
+      TEACHER: "ครู",
+      STUDENT: "นักเรียน",
+      PARENT: "ผู้ปกครอง",
+      CUSTOMER: "ลูกค้า",
+    },
+
+    en: {
+      ADMIN: "Admin",
+      MANAGER: "Manager",
+      STAFF: "Staff",
+      TEACHER: "Teacher",
+      STUDENT: "Student",
+      PARENT: "Parent",
+      CUSTOMER: "Customer",
+    },
+  }[lang];
+
+  const publicLinks = [
+    { id: "home", label: t.home },
+    { id: "courses", label: t.courses },
+    { id: "products", label: t.products },
+    { id: "about", label: t.about },
+  ];
+
+  // Name, role by lang
+  const displayName = user
+    ? (lang === "th" ? user.fullNameTh : user.fullNameEn) ||
+      user.fullNameEn ||
+      user.fullNameTh ||
+      user.email
+    : "";
+  const rawRole = user ? (user.role ?? user.Role) : "";
+  const roleLabel = roleLabels[rawRole] ?? rawRole;
+
+  // Close the desktop user dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
+        setUserMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  function go(route) {
+    onNavigate(route);
+    setMobileMenuOpen(false);
+  }
+
+  function handleLogout() {
+    setMobileMenuOpen(false);
+    setUserMenuOpen(false);
+    onLogout();
+  }
 
   return (
     <nav className="sticky top-0 z-50 bg-slate-950/90 backdrop-blur-md border-b border-amber-500/20 text-slate-100">
@@ -43,33 +111,18 @@ export default function Navbar({ lang, setLang, onNavigate }) {
 
         {/* Desktop navigation Links */}
         <div className="hidden md:flex items-center gap-8 text-sm font-medium tracking-wide">
-          <button
-            onClick={() => onNavigate("home")}
-            className="hover: text-amber-400 transition"
-          >
-            {t.home}
-          </button>
-          <button
-            onClick={() => onNavigate("courses")}
-            className="hover: text-amber-400 transition"
-          >
-            {t.courses}
-          </button>
-          <button
-            onClick={() => onNavigate("products")}
-            className="hover: text-amber-400 transition"
-          >
-            {t.products}
-          </button>
-          <button
-            onClick={() => onNavigate("about")}
-            className="hover: text-amber-400 transition"
-          >
-            {t.about}
-          </button>
+          {publicLinks.map((link) => (
+            <button
+              key={link.id}
+              onClick={() => go(link.id)}
+              className="hover:text-amber-400 transition"
+            >
+              {link.label}
+            </button>
+          ))}
         </div>
 
-        {/* Right Area: Language Toggle & Staff login */}
+        {/* Right Area (Desktop): Language Toggle & Staff login */}
         <div className="hidden md:flex items-center gap-5">
           {/* Language select Button */}
           <div className="flex items-center bg-slate-900 border border-slate-800 rounded-full p-1 text-xs font-semibold">
@@ -87,12 +140,52 @@ export default function Navbar({ lang, setLang, onNavigate }) {
             </button>
           </div>
 
-          <button
-            onClick={() => onNavigate("login")}
-            className="bg-linear-to-r from-amber-500 to-amber-600 text-slate-950 px-5 py-2 rounded-full text-xs font-bold tracking-wider uppercase shadow-md hover:from-amber-400 hover:to-amber-500 transition"
-          >
-            {t.login}
-          </button>
+          {user ? (
+            <div className="relative" ref={userMenuRef}>
+              <button
+                onClick={() => setUserMenuOpen(!userMenuOpen)}
+                className="flex items-center gap-3 bg-slate-900 border border-slate-800 hover:border-amber-500/60 rounded-full pl-4 pr-3 py-1.5 transition"
+              >
+                <span className="text-left leading-tight">
+                  <span className="block text-xs font-semibold text-slate-100 max-w-40 truncate">
+                    {displayName}
+                  </span>
+                  <span className="block text-[10px] tracking-wider text-amber-400 uppercase">
+                    {roleLabel}
+                  </span>
+                </span>
+                <span
+                  className={`text-xs text-slate-400 transition-transform ${userMenuOpen ? "rotate-180" : ""}`}
+                >
+                  ▾
+                </span>
+              </button>
+
+              {userMenuOpen && (
+                <div className="absolute right-0 mt-2 w-56 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden">
+                  <button
+                    onClick={() => go("change-password")}
+                    className="w-full text-left px-4 py-3 text-sm text-slate-200 hover:bg-slate-800 transition"
+                  >
+                    {t.changePassword}
+                  </button>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full text-left px-4 py-3 text-sm text-red-400 hover:bg-slate-800 border-t border-slate-800 transition"
+                  >
+                    {t.logout}
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <button
+              onClick={() => go("login")}
+              className="bg-linear-to-r from-amber-500 to-amber-600 text-slate-950 px-5 py-2 rounded-full text-xs font-bold tracking-wider uppercase shadow-md hover:from-amber-400 hover:to-amber-500 transition"
+            >
+              {t.login}
+            </button>
+          )}
         </div>
 
         {/* Mobile Menu Button */}
@@ -114,60 +207,61 @@ export default function Navbar({ lang, setLang, onNavigate }) {
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="text-slate-300 hover:text-white p-2"
+            aria-label="Menu"
           >
-            ☰
+            {mobileMenuOpen ? "✕" : "☰"}
           </button>
         </div>
       </div>
 
-      {/* Mobile Dropdown Menu */}
+      {/* Mobile Dropdown Menu: public links + staff section */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-slate-900 border-b border-slate-800 px-6 py-4 flex flex-col gap-4 text-sm">
-          <button
-            onClick={() => {
-              onNavigate("home");
-              setMobileMenuOpen(false);
-            }}
-            className="text-left py-2"
-          >
-            {t.home}
-          </button>
-          <button
-            onClick={() => {
-              onNavigate("courses");
-              setMobileMenuOpen(false);
-            }}
-            className="text-left py-2"
-          >
-            {t.courses}
-          </button>
-          <button
-            onClick={() => {
-              onNavigate("products");
-              setMobileMenuOpen(false);
-            }}
-            className="text-left py-2"
-          >
-            {t.products}
-          </button>
-          <button
-            onClick={() => {
-              onNavigate("about");
-              setMobileMenuOpen(false);
-            }}
-            className="text-left py-2"
-          >
-            {t.about}
-          </button>
-          <button
-            onClick={() => {
-              onNavigate("login");
-              setMobileMenuOpen(false);
-            }}
-            className="text-left py-2"
-          >
-            {t.login}
-          </button>
+        <div className="md:hidden bg-slate-900 border-b border-slate-800 text-sm">
+          {/* Public pages */}
+          <div className="px-6 py-3 flex flex-col">
+            {publicLinks.map((link) => (
+              <button
+                key={link.id}
+                onClick={() => go(link.id)}
+                className="text-left py-3"
+              >
+                {link.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Staff section */}
+          <div className="border-t border-slate-800 bg-slate-950/60 px-6 py-4">
+            {user ? (
+              <>
+                <div className="pb-3 mb-1 border-b border-slate-800">
+                  <p className="font-semibold text-slate-100">{displayName}</p>
+                  <span className="inline-block mt-1 text-[10px] tracking-wider text-amber-400 uppercase bg-amber-500/10 px-2 py-0.5 rounded-full">
+                    {roleLabel}
+                  </span>
+                </div>
+                <button
+                  onClick={() => go("change-password")}
+                  className="block w-full text-left py-3 text-slate-200"
+                >
+                  {t.changePassword}
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="block w-full text-left py-3 text-red-400"
+                >
+                  {t.logout}
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={() => go("login")}
+                className="w-full bg-linear-to-r from-amber-500 to-amber-600 text-slate-950 py-3 rounded-full text-xs font-bold tracking-wider uppercase"
+              >
+                {t.login}
+              </button>
+            )}
+          </div>
         </div>
       )}
     </nav>
