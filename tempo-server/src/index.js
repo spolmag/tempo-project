@@ -1,7 +1,8 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
-import authRoutes from "./routes/auth.js";
+import authRoutes from "./routes/authRoutes.js";
+import adminUserRoutes from "./routes/adminUsersRoutes.js";
 
 const app = express();
 app.use(cors({ origin: process.env.CLIENT_URL || "http://localhost:5173" }));
@@ -12,6 +13,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/auth", authRoutes);
+app.use("/api/admin/users", adminUserRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

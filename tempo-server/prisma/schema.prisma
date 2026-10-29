@@ -17,22 +17,62 @@ enum Role {
 }
 
 model User {
-  id            String      @id @default(uuid())
-  email         String      @unique
-  passwordHash  String
-  fullNameTh    String
-  fullNameEn    String
-  addressTh     String?
-  addressEn     String?
-  dateOfBirth   DateTime?
-  phone         String?
-  lineId        String?
-  role          Role        @default(STAFF)
-  isActive      Boolean     @default(true)
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-  createdById   String
-  updatedById   String
+  id                  String      @id @default(uuid())
+  email               String      @unique
+  passwordHash        String
+  fullNameTh          String
+  fullNameEn          String
+  addressTh           String?
+  addressEn           String?
+  taxId               String?
+  dateOfBirth         DateTime?
+  phone               String?
+  lineId              String?
+  role                Role        @default(STAFF)
+  isActive            Boolean     @default(true)
+  mustChangePassword  Boolean     @default(false)
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+  createdById         String
+  updatedById         String
+
+  branchAccess        UserBranch[]
 
   @@map("users")
+}
+
+model Branch {
+  id                  String      @id @default(uuid())
+  code                String      @unique
+  nameTh              String
+  nameEn              String
+  addressTh           String?
+  addressEn           String?
+  taxId               String?
+  taxBranchNo         String?
+  isVatRegistered     Boolean     @default(false)
+  isActive            Boolean     @default(true)
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+  createdById         String
+  updatedById         String
+
+  userAccess          UserBranch[]
+
+  @@map("branches")
+}
+
+model UserBranch {
+  userId              String
+  branchId            String
+  role                Role
+  createdAt           DateTime    @default(now())
+  createdById         String
+
+  user                User        @relation(fields: [userId], references: [id])
+  branch              Branch      @relation(fields: [branchId], references: [id])
+
+  @@id([userId, branchId, role])
+  @@index([branchId])
+  @@map("user_branches")
 }

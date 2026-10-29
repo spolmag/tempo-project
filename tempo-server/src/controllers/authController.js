@@ -58,6 +58,7 @@ export async function login(req, res) {
         fullNameTh: user.fullNameTh,
         fullNameEn: user.fullNameEn,
         role: user.role,
+        mustChangePassword: user.mustChangePassword,
       },
     });
   } catch (error) {
@@ -96,6 +97,17 @@ export async function changePassword(req, res) {
       });
     }
 
+    // New password must not be the shared default password
+    if (
+      process.env.DEFAULT_RESET_PASSWORD &&
+      newPassword === process.env.DEFAULT_RESET_PASSWORD
+    ) {
+      return res.status(400).json({
+        code: "DEFAULT_PASSWORD",
+        message: "Please choose a different password",
+      });
+    }
+
     // 4. Find the user from the token (req.user.id), not from the request body
     const user = await prisma.user.findUnique({ where: { id: req.user.id } });
     if (!user || !user.isActive) {
@@ -115,7 +127,7 @@ export async function changePassword(req, res) {
     const passwordHash = await bcrypt.hash(newPassword, 10);
     await prisma.user.update({
       where: { id: user.id },
-      data: { passwordHash, updatedById: user.id },
+      data: { passwordHash, mustChangePassword: false, updatedById: user.id },
     });
 
     res.json({ message: "Password changed successfully" });
