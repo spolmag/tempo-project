@@ -1,12 +1,13 @@
 import React, { useState } from "react";
-import { changePassword } from "../lib/auth.js";
+import { changePassword, logout } from "../lib/auth.js";
 
 const MIN_LENGTH = 8; //Keep in sync with the backend rule
 
 export default function ChangePasswordPage({
   lang = "th",
+  forced = false,
   onDone,
-  onSessionExpired,
+  onCancel,
   onLogout,
 }) {
   const [currentPassword, setCurrentPassword] = useState("");
@@ -37,6 +38,7 @@ export default function ChangePasswordPage({
       wrongCurrentError: "รหัสผ่านปัจจุบันไม่ถูกต้อง",
       sessionExpireError: "เซสชั่นหมดอายุ กรุณาเข้าสู่ระบบอีกครั้ง",
       serverErrorMsg: "ระบบขัดข้อง กรุณาลองใหม่อีกครั้ง",
+      logoutBtn: "ออกจากระบบ",
     },
     en: {
       badge: "MY ACCOUNT",
@@ -51,7 +53,7 @@ export default function ChangePasswordPage({
       submittingBtn: "Saving...",
       cancelBtn: "Cancel",
       successMsg:
-        "Password changed successfully, Please re-login with new password.s",
+        "Password changed successfully, Please re-login with new password.",
       requiredError: "Please fill out all fields.",
       weakError: `New password must be at least ${MIN_LENGTH} characters.`,
       mismatchError: "New password and confirmation do not match.",
@@ -59,6 +61,7 @@ export default function ChangePasswordPage({
       wrongCurrentError: "Current password is incorrect.",
       sessionExpireError: "Your session has expired. Please sign in again.",
       serverErrorMsg: "Something went wrong. Please try again.",
+      logoutBtn: "Log out",
     },
   }[lang];
 
@@ -92,7 +95,7 @@ export default function ChangePasswordPage({
     switch (err.code) {
       case "WRONG_CURRENT_PASSWORD":
         return t.wrongCurrentError;
-      case "WEAK_PASSWORK":
+      case "WEAK_PASSWORD":
         return t.weakError;
       case "SAME_PASSWORD":
         return t.sameError;
@@ -142,13 +145,6 @@ export default function ChangePasswordPage({
     } catch (err) {
       setError(getErrorMessage(err));
       setLoading(false);
-
-      // Token expired or invalid: log the user out so the navbar is correct
-      if (err.status === 401) {
-        setTimeout(() => {
-          if (onSessionExpired) onSessionExpired();
-        }, 1800);
-      }
     }
   }
 
@@ -206,11 +202,11 @@ export default function ChangePasswordPage({
 
           <button
             type="button"
-            onClick={() => onDone && onDone()}
-            disabled={loading && !!success}
+            onClick={() => (forced ? onLogout?.() : onCancel?.())}
+            disabled={!!success}
             className="w-full text-sm text-slate-400 hover:text-slate-200 transition"
           >
-            {t.cancelBtn}
+            {forced ? t.logoutBtn : t.cancelBtn}
           </button>
         </form>
       </div>

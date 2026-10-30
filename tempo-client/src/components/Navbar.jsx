@@ -49,12 +49,14 @@ export default function Navbar({ lang, setLang, onNavigate, user, onLogout }) {
     },
   }[lang];
 
-  const publicLinks = [
-    { id: "home", label: t.home },
-    { id: "courses", label: t.courses },
-    { id: "products", label: t.products },
-    { id: "about", label: t.about },
-  ];
+  const publicLinks = user?.mustChangePassword
+    ? []
+    : [
+        { id: "home", label: t.home },
+        { id: "courses", label: t.courses },
+        { id: "products", label: t.products },
+        { id: "about", label: t.about },
+      ];
 
   // Name, role by lang
   const displayName = user

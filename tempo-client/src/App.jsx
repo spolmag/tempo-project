@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { getUser, logout } from "./lib/auth.js";
 import Navbar from "./components/Navbar";
 import HomePage from "../src/pages/public/HomePage.jsx";
@@ -8,11 +8,40 @@ import ChangePasswordPage from "./components/ChangePasswordPage";
 export default function App() {
   const [lang, setLang] = useState("th");
   const [user, setUser] = useState(getUser());
-  const [currentRoute, setCurrentRoute] = useState("home");
+  const [currentRoute, setCurrentRoute] = useState(() =>
+    getUser()?.mustChangePassword ? "change-password" : "home",
+  );
+
+  useEffect(() => {
+    function onExpired() {
+      setUser(null);
+      setCurrentRoute("login");
+    }
+
+    function onMustChange() {
+      setUser(getUser());
+      setCurrentRoute("change-password");
+    }
+
+    window.addEventListener("auth:expired", onExpired);
+    window.addEventListener("auth:must-change-password", onMustChange);
+
+    return () => {
+      window.removeEventListener("auth:expired", onExpired);
+      window.removeEventListener("auth:must-change-password", onMustChange);
+    };
+  }, []);
 
   function handleLoginSuccess() {
-    setUser(getUser());
-    setCurrentRoute("home");
+    const u = getUser();
+    setUser(u);
+    setCurrentRoute(u?.mustChangePassword ? "change-password" : "home");
+  }
+
+  // Users who must change their password can't open other pages
+  function navigate(route) {
+    if (user?.mustChangePassword && route !== "change-password") return;
+    setCurrentRoute(route);
   }
 
   function handleLogout() {
@@ -37,7 +66,9 @@ export default function App() {
         return (
           <ChangePasswordPage
             lang={lang}
+            forced={!!user.mustChangePassword}
             onDone={() => setCurrentRoute("login")}
+            onCancel={() => setCurrentRoute("home")}
             onLogout={handleLogout}
           />
         );
@@ -74,7 +105,7 @@ export default function App() {
 
       case "home":
       default:
-        return <HomePage lang={lang} onNavigate={setCurrentRoute} />;
+        return <HomePage lang={lang} onNavigate={navigate} />;
     }
   }
 
@@ -83,7 +114,7 @@ export default function App() {
       <Navbar
         lang={lang}
         setLang={setLang}
-        onNavigate={setCurrentRoute}
+        onNavigate={navigate}
         user={user}
         onLogout={handleLogout}
       />

@@ -1,26 +1,22 @@
 import { apiFetch } from "./api.js";
+import { saveSession, clearSession, getStoredUser } from "./session.js";
 
 export async function login(email, password) {
   const data = await apiFetch("/api/auth/login", {
     method: "POST",
     body: JSON.stringify({ email, password }),
   });
-  localStorage.setItem("token", data.token);
-  localStorage.setItem("user", JSON.stringify(data.user));
+  saveSession(data.token, data.user);
   return data.user;
 }
 
+// Returns null when there is no session or the token has expired
 export function getUser() {
-  try {
-    return JSON.parse(localStorage.getItem("user"));
-  } catch {
-    return null;
-  }
+  return getStoredUser();
 }
 
 export function logout() {
-  localStorage.removeItem("token");
-  localStorage.removeItem("user");
+  clearSession();
 }
 
 export async function changePassword(currentPassword, newPassword) {
