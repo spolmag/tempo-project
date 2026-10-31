@@ -1,4 +1,6 @@
-export default function HomePage({ lang = "th", onNavigate }) {
+import { Link } from "react-router-dom";
+
+export default function HomePage({ lang = "th" }) {
   const t = {
     th: {
       heroSub: "TEMPO CONSERVATORY & INSTRUMENTS",
@@ -48,18 +50,18 @@ export default function HomePage({ lang = "th", onNavigate }) {
           {t.heroTitle}
         </h1>
         <div className="flex justify-center gap-4">
-          <button
-            onClick={() => onNavigate("courses")}
+          <Link
+            to="/courses"
             className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-6 py-3 rounded-full transition"
           >
             {t.btnCourses}
-          </button>
-          <button
-            onClick={() => onNavigate("products")}
+          </Link>
+          <Link
+            to="/products"
             className="border border-slate-700 hover:border-amber-500 px-6 py-3 rounded-full transition"
           >
             {t.btnProducts}
-          </button>
+          </Link>
         </div>
       </div>
 

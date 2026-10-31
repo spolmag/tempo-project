@@ -29,7 +29,7 @@ export default function StaffLoginPage({ lang = "th", onLoginSuccess }) {
     en: {
       badge: "INTERNAL PORTAL",
       title: "Staff Sign In",
-      subTitle: "Please sign with with your user email and password.",
+      subTitle: "Please sign in with with your user email and password.",
       emailLabel: "Email",
       passwordLabel: "Password",
       placeholderEmail: "staff@tempo.com",
@@ -39,7 +39,7 @@ export default function StaffLoginPage({ lang = "th", onLoginSuccess }) {
       successMsg: "Signed in successfully, please wait...",
       errorMsg: "Invalid email or password. Please try again.",
       helpText: "Forgot password or need assistance? Contact system admin.",
-      requiredError: "Please fill out all field.",
+      requiredError: "Please fill out all fields.",
       disabledMsg:
         "This account has been disabled. Please contact the system admin.",
       serverErrorMsg: "Something went wrong. Please try again.",

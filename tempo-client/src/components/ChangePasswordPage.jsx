@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { changePassword, logout } from "../lib/auth.js";
+import { changePassword } from "../lib/auth.js";
 
 const MIN_LENGTH = 8; //Keep in sync with the backend rule
 

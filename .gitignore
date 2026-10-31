@@ -19,3 +19,11 @@
 !.vscode/extensions.json
 .idea
 .DS_Store
+
+# AI assistant folders
+.agents/
+.claude/
+.windsurf/
+**/tempo-client/.agents/
+**/tempo-client/.claude/
+**/tempo-client/.windsurf/

@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
+import { Link, NavLink, useLocation } from "react-router-dom";
 
-export default function Navbar({ lang, setLang, onNavigate, user, onLogout }) {
+export default function Navbar({ lang, setLang, user, onLogout }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const userMenuRef = useRef(null);
@@ -37,7 +38,6 @@ export default function Navbar({ lang, setLang, onNavigate, user, onLogout }) {
       PARENT: "ผู้ปกครอง",
       CUSTOMER: "ลูกค้า",
     },
-
     en: {
       ADMIN: "Admin",
       MANAGER: "Manager",
@@ -52,10 +52,10 @@ export default function Navbar({ lang, setLang, onNavigate, user, onLogout }) {
   const publicLinks = user?.mustChangePassword
     ? []
     : [
-        { id: "home", label: t.home },
-        { id: "courses", label: t.courses },
-        { id: "products", label: t.products },
-        { id: "about", label: t.about },
+        { to: "/", label: t.home, end: true },
+        { to: "/courses", label: t.courses },
+        { to: "/products", label: t.products },
+        { to: "/about", label: t.about },
       ];
 
   // Name, role by lang
@@ -79,25 +79,27 @@ export default function Navbar({ lang, setLang, onNavigate, user, onLogout }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  function go(route) {
-    onNavigate(route);
+  function closeMenus() {
     setMobileMenuOpen(false);
+    setUserMenuOpen(false);
   }
 
   function handleLogout() {
-    setMobileMenuOpen(false);
-    setUserMenuOpen(false);
+    closeMenus();
     onLogout();
   }
+
+  // The current page's link is highlighted
+  const desktopLinkClass = ({ isActive }) =>
+    `transition ${isActive ? "text-amber-400" : "hover:text-amber-400"}`;
+  const mobileLinkClass = ({ isActive }) =>
+    `block py-3 ${isActive ? "text-amber-400" : ""}`;
 
   return (
     <nav className="sticky top-0 z-50 bg-slate-950/90 backdrop-blur-md border-b border-amber-500/20 text-slate-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
         {/* Brand Logo */}
-        <div
-          className="cursor-pointer flex items-center gap-3"
-          onClick={() => onNavigate("home")}
-        >
+        <Link to="/" onClick={closeMenus} className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-linear-to-tr from-amber-600 to-amber-400 flex items-center justify-center font-bold text-slate-950 text-xl shadow-lg shadow-amber-500/20">
             T
           </div>
@@ -109,18 +111,20 @@ export default function Navbar({ lang, setLang, onNavigate, user, onLogout }) {
               Elite Music
             </span>
           </div>
-        </div>
+        </Link>
 
         {/* Desktop navigation Links */}
         <div className="hidden md:flex items-center gap-8 text-sm font-medium tracking-wide">
           {publicLinks.map((link) => (
-            <button
+            <NavLink
               key={link.id}
-              onClick={() => go(link.id)}
-              className="hover:text-amber-400 transition"
+              to={link.to}
+              end={link.end}
+              onClick={closeMenus}
+              className={desktopLinkClass}
             >
               {link.label}
-            </button>
+            </NavLink>
           ))}
         </div>
 
@@ -165,12 +169,13 @@ export default function Navbar({ lang, setLang, onNavigate, user, onLogout }) {
 
               {userMenuOpen && (
                 <div className="absolute right-0 mt-2 w-56 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden">
-                  <button
-                    onClick={() => go("change-password")}
-                    className="w-full text-left px-4 py-3 text-sm text-slate-200 hover:bg-slate-800 transition"
+                  <Link
+                    to="/change-password"
+                    onClick={closeMenus}
+                    className="block w-full text-left px-4 py-3 text-sm text-slate-200 hover:bg-slate-800 transition"
                   >
                     {t.changePassword}
-                  </button>
+                  </Link>
                   <button
                     onClick={handleLogout}
                     className="w-full text-left px-4 py-3 text-sm text-red-400 hover:bg-slate-800 border-t border-slate-800 transition"
@@ -181,12 +186,14 @@ export default function Navbar({ lang, setLang, onNavigate, user, onLogout }) {
               )}
             </div>
           ) : (
-            <button
-              onClick={() => go("login")}
+            <Link
+              to="/login"
+              state={{ from: location.pathname }}
+              onClick={closeMenus}
               className="bg-linear-to-r from-amber-500 to-amber-600 text-slate-950 px-5 py-2 rounded-full text-xs font-bold tracking-wider uppercase shadow-md hover:from-amber-400 hover:to-amber-500 transition"
             >
               {t.login}
-            </button>
+            </Link>
           )}
         </div>
 
@@ -222,13 +229,15 @@ export default function Navbar({ lang, setLang, onNavigate, user, onLogout }) {
           {/* Public pages */}
           <div className="px-6 py-3 flex flex-col">
             {publicLinks.map((link) => (
-              <button
+              <NavLink
                 key={link.id}
-                onClick={() => go(link.id)}
-                className="text-left py-3"
+                to={link.to}
+                end={link.end}
+                onClick={closeMenus}
+                className={mobileLinkClass}
               >
                 {link.label}
-              </button>
+              </NavLink>
             ))}
           </div>
 
@@ -242,12 +251,13 @@ export default function Navbar({ lang, setLang, onNavigate, user, onLogout }) {
                     {roleLabel}
                   </span>
                 </div>
-                <button
-                  onClick={() => go("change-password")}
+                <Link
+                  to="/change-password"
+                  onClick={closeMenus}
                   className="block w-full text-left py-3 text-slate-200"
                 >
                   {t.changePassword}
-                </button>
+                </Link>
                 <button
                   onClick={handleLogout}
                   className="block w-full text-left py-3 text-red-400"
@@ -256,12 +266,14 @@ export default function Navbar({ lang, setLang, onNavigate, user, onLogout }) {
                 </button>
               </>
             ) : (
-              <button
-                onClick={() => go("login")}
-                className="w-full bg-linear-to-r from-amber-500 to-amber-600 text-slate-950 py-3 rounded-full text-xs font-bold tracking-wider uppercase"
+              <Link
+                to="/login"
+                state={{ from: location.pathname }}
+                onClick={closeMenus}
+                className="block w-full text-center bg-linear-to-r from-amber-500 to-amber-600 text-slate-950 py-3 rounded-full text-xs font-bold tracking-wider uppercase"
               >
                 {t.login}
-              </button>
+              </Link>
             )}
           </div>
         </div>
