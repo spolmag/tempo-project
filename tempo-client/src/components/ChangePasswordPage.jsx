@@ -38,6 +38,8 @@ export default function ChangePasswordPage({
       wrongCurrentError: "รหัสผ่านปัจจุบันไม่ถูกต้อง",
       sessionExpireError: "เซสชั่นหมดอายุ กรุณาเข้าสู่ระบบอีกครั้ง",
       serverErrorMsg: "ระบบขัดข้อง กรุณาลองใหม่อีกครั้ง",
+      networkErrorMsg:
+        "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ กรุณาลองใหม่อีกครั้ง",
       logoutBtn: "ออกจากระบบ",
     },
     en: {
@@ -61,6 +63,7 @@ export default function ChangePasswordPage({
       wrongCurrentError: "Current password is incorrect.",
       sessionExpireError: "Your session has expired. Please sign in again.",
       serverErrorMsg: "Something went wrong. Please try again.",
+      networkErrorMsg: "Cannot connect to server, Please try again",
       logoutBtn: "Log out",
     },
   }[lang];
@@ -93,6 +96,8 @@ export default function ChangePasswordPage({
   function getErrorMessage(err) {
     if (err.status === 401) return t.sessionExpireError;
     switch (err.code) {
+      case "NETWORK_ERROR":
+        return t.networkErrorMsg;
       case "WRONG_CURRENT_PASSWORD":
         return t.wrongCurrentError;
       case "WEAK_PASSWORD":
@@ -141,7 +146,7 @@ export default function ChangePasswordPage({
       setTimeout(() => {
         if (onLogout) onLogout();
         if (onDone) onDone();
-      }, 1800);
+      }, 2000);
     } catch (err) {
       setError(getErrorMessage(err));
       setLoading(false);

@@ -25,11 +25,12 @@ export default function StaffLoginPage({ lang = "th", onLoginSuccess }) {
       requiredError: "กรุณากรอกข้อมูลให้ครบถ้วน",
       disabledMsg: "บัญชีนี้ถูกระงับการใช้งาน กรุณาติดต่อแอดมินระบบ",
       serverErrorMsg: "ระบบขัดข้อง กรุณาลองใหม่อีกครั้ง",
+      networkErrorMsg: "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ กรุณาลองใหม่อีกครั้ง",
     },
     en: {
       badge: "INTERNAL PORTAL",
       title: "Staff Sign In",
-      subTitle: "Please sign in with with your user email and password.",
+      subTitle: "Please sign in with your user email and password.",
       emailLabel: "Email",
       passwordLabel: "Password",
       placeholderEmail: "staff@tempo.com",
@@ -43,6 +44,7 @@ export default function StaffLoginPage({ lang = "th", onLoginSuccess }) {
       disabledMsg:
         "This account has been disabled. Please contact the system admin.",
       serverErrorMsg: "Something went wrong. Please try again.",
+      networkErrorMsg: "Cannot connect to server, Please try again",
     },
   }[lang];
 
@@ -70,14 +72,16 @@ export default function StaffLoginPage({ lang = "th", onLoginSuccess }) {
         }
       }, 1800);
     } catch (err) {
-      if (err.status === 401) {
+      if (err.code === "NETWORK_ERROR") {
+        // No response from the server (server down or no internet)
+        setError(t.networkErrorMsg);
+      } else if (err.status === 401) {
         setError(t.errorMsg);
       } else if (err.status === 403) {
         setError(t.disabledMsg);
       } else {
-        setError(t.serverErrorMsg); // 500, or the server can't be reached
+        setError(t.serverErrorMsg);
       }
-
       setLoading(false);
     }
   }

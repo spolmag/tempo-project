@@ -172,3 +172,78 @@ export async function createUser(req, res) {
       .json({ message: "Something went wrong, please try again." });
   }
 }
+
+// PATCH /api/admin/users/:id/deactivate
+export async function toggleDeactivateUser(req, res) {
+  try {
+    const { id } = req.params;
+
+    // Prevent admin to deactivate themselves
+    if (id === req.user.id) {
+      return res.status(400).json({
+        code: "CANNOT_DEACTIVATE_SELF",
+        message: "You cannot deactivate your own account",
+      });
+    }
+
+    const targetUser = await prisma.user.findUnique({ where: { id } });
+    if (!targetUser) {
+      return res
+        .status(404)
+        .json({ code: "USER_NOT_FOUND", message: "User not found" });
+    }
+
+    const updateUser = await prisma.user.update({
+      where: { id },
+      data: {
+        isActive: !targetUser.isActive,
+        updatedById: req.user.id,
+      },
+      select: USER_SELECT,
+    });
+
+    res.json({ user: updateUser });
+  } catch (error) {
+    console.error("Toggle deactivate error:", error);
+    res.status(500).json({ message: "Something went wrong, please try again" });
+  }
+}
+
+// POST /api/admin/users/:id/reset-password
+export async function resetUserPassword(req, res) {
+  try {
+    const defaultPassword = process.env.DEFAULT_RESET_PASSWORD;
+    if (!defaultPassword || defaultPassword.length < 8) {
+      return res
+        .status(500)
+        .json({ message: "Server is not configured correctly." });
+    }
+
+    const { id } = req.params;
+    const targetUser = await prisma.user.findUnique({ where: { id } });
+    if (!targetUser) {
+      return res
+        .status(404)
+        .json({ code: "USER_NOT_FOUND", message: "User not found" });
+    }
+
+    const passwordHash = await bcrypt.hash(defaultPassword, 10);
+
+    const updateUser = await prisma.user.update({
+      where: { id },
+      data: {
+        passwordHash,
+        mustChangePassword: true,
+        updatedById: req.user.id,
+      },
+      select: USER_SELECT,
+    });
+
+    res.json({ user: updateUser, message: "Password reset successfully" });
+  } catch (error) {
+    console.error("Reset password error:", error);
+    res
+      .status(500)
+      .json({ message: "Something went wrong, please try again." });
+  }
+}

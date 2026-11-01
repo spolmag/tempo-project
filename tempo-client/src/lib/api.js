@@ -6,14 +6,22 @@ export async function apiFetch(path, options = {}) {
   // Returns null if there is no token or it has expired
   const token = getToken();
 
-  const res = await fetch(`${API_URL}${path}`, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...(token && { Authorization: `Bearer ${token}` }),
-      ...options.headers,
-    },
-  });
+  let res;
+  try {
+    res = await fetch(`${API_URL}${path}`, {
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...(token && { Authorization: `Bearer ${token}` }),
+        ...options.headers,
+      },
+    });
+  } catch {
+    const error = new Error("Cannot connect to the server");
+    error.status = 0;
+    error.code = "NETWORK_ERROR";
+    throw error;
+  }
 
   const data = await res.json().catch(() => ({}));
 

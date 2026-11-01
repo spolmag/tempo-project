@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 
 export default function Navbar({ lang, setLang, user, onLogout }) {
+  const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const userMenuRef = useRef(null);
@@ -117,7 +118,7 @@ export default function Navbar({ lang, setLang, user, onLogout }) {
         <div className="hidden md:flex items-center gap-8 text-sm font-medium tracking-wide">
           {publicLinks.map((link) => (
             <NavLink
-              key={link.id}
+              key={link.to}
               to={link.to}
               end={link.end}
               onClick={closeMenus}
@@ -230,7 +231,7 @@ export default function Navbar({ lang, setLang, user, onLogout }) {
           <div className="px-6 py-3 flex flex-col">
             {publicLinks.map((link) => (
               <NavLink
-                key={link.id}
+                key={link.to}
                 to={link.to}
                 end={link.end}
                 onClick={closeMenus}

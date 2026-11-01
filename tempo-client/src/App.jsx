@@ -64,7 +64,8 @@ export default function App() {
   // forced users are sent there anyway, and after a successful change
   // the user should land on the home page.
   const from = location.state?.from;
-  const afterLogin = from && from !== "/change-password" ? from : "/";
+  const afterLogin =
+    from && from !== "/change-password" && from !== "/login" ? from : "/";
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
