@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { login } from "../lib/auth.js";
+import { useNavigate } from "react-router-dom";
 
 export default function StaffLoginPage({ lang = "th", onLoginSuccess }) {
   const [email, setEmail] = useState("");
@@ -7,6 +8,8 @@ export default function StaffLoginPage({ lang = "th", onLoginSuccess }) {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
+  const [warning, setWarning] = useState("");
+  const navigate = useNavigate();
 
   const t = {
     th: {
@@ -26,6 +29,8 @@ export default function StaffLoginPage({ lang = "th", onLoginSuccess }) {
       disabledMsg: "บัญชีนี้ถูกระงับการใช้งาน กรุณาติดต่อแอดมินระบบ",
       serverErrorMsg: "ระบบขัดข้อง กรุณาลองใหม่อีกครั้ง",
       networkErrorMsg: "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ กรุณาลองใหม่อีกครั้ง",
+      mustChangeMsg:
+        "เข้าสู่ระบบสำเร็จ เนื่องจากคุณใช้รหัสผ่านชั่วคราว กรุณาเปลี่ยนรหัสผ่านก่อนใช้งานต่อ...",
     },
     en: {
       badge: "INTERNAL PORTAL",
@@ -45,46 +50,43 @@ export default function StaffLoginPage({ lang = "th", onLoginSuccess }) {
         "This account has been disabled. Please contact the system admin.",
       serverErrorMsg: "Something went wrong. Please try again.",
       networkErrorMsg: "Cannot connect to server, Please try again",
+      mustChangeMsg:
+        "Signed in successfully, You must change your temporary password before continuing.",
     },
   }[lang];
 
-  async function handleLogin(e) {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
     setSuccess("");
+    setWarning("");
 
-    if (!email.trim() || !password) {
+    if (!email || !password) {
       setError(t.requiredError);
       return;
     }
 
-    setLoading(true);
-
     try {
-      await login(email, password);
-      setSuccess(t.successMsg);
+      setLoading(true);
+      const user = await login(email, password); // Calls auth.js login
 
-      setTimeout(() => {
-        if (onLoginSuccess) {
-          onLoginSuccess();
-        } else {
-          window.location.href = "/";
-        }
-      }, 1800);
-    } catch (err) {
-      if (err.code === "NETWORK_ERROR") {
-        // No response from the server (server down or no internet)
-        setError(t.networkErrorMsg);
-      } else if (err.status === 401) {
-        setError(t.errorMsg);
-      } else if (err.status === 403) {
-        setError(t.disabledMsg);
+      if (user?.mustChangePassword) {
+        setWarning(t.mustChangeMsg);
+        setTimeout(() => {
+          if (onLoginSuccess) onLoginSuccess(user); // Notify App.jsx to update user state & redirect
+        }, 2000); // Gives 2 seconds for the user to read the warning
       } else {
-        setError(t.serverErrorMsg);
+        setSuccess(t.successMsg);
+        setTimeout(() => {
+          if (onLoginSuccess) onLoginSuccess(user);
+        }, 1500);
       }
+    } catch (err) {
+      setError(err.message || t.errorMsg);
+    } finally {
       setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-[85vh] bg-slate-950 text-slate-100 flex items-center justify-center px-4 py-8">
@@ -136,6 +138,12 @@ export default function StaffLoginPage({ lang = "th", onLoginSuccess }) {
           {success && (
             <div className="mb-5 bg-emerald-950/50 border border-emerald-800/60 text-emerald-300 text-sm p-3 rounded-xl text-center">
               {success}
+            </div>
+          )}
+
+          {warning && (
+            <div className="mb-5 bg-amber-950/50 border border-amber-800/60 text-amber-300 text-sm p-3 rounded-xl text-center">
+              {warning}
             </div>
           )}
 

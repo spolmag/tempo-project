@@ -63,7 +63,7 @@ export default function ChangePasswordPage({
       wrongCurrentError: "Current password is incorrect.",
       sessionExpireError: "Your session has expired. Please sign in again.",
       serverErrorMsg: "Something went wrong. Please try again.",
-      networkErrorMsg: "Cannot connect to server, Please try again",
+      networkErrorMsg: "Cannot connect to server, Please try again.",
       logoutBtn: "Log out",
     },
   }[lang];

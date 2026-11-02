@@ -3,7 +3,7 @@ import { requireAuth, requireRole } from "../middleware/requireAuth.js";
 import {
   listUsers,
   createUser,
-  toggleDeactivateUser,
+  setUserActive,
   resetUserPassword,
 } from "../controllers/adminUserController.js";
 
@@ -14,7 +14,7 @@ router.use(requireAuth, requireRole("ADMIN"));
 
 router.get("/", listUsers);
 router.post("/", createUser);
-router.patch("/:id/deactivate", toggleDeactivateUser);
+router.patch("/:id/status", setUserActive);
 router.post("/:id/reset-password", resetUserPassword);
 
 export default router;

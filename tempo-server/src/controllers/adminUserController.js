@@ -173,13 +173,21 @@ export async function createUser(req, res) {
   }
 }
 
-// PATCH /api/admin/users/:id/deactivate
-export async function toggleDeactivateUser(req, res) {
+// PATCH /api/admin/users/:id/status   body: { "isActive": true | false }
+export async function setUserActive(req, res) {
   try {
     const { id } = req.params;
+    const { isActive } = req.body ?? {};
 
-    // Prevent admin to deactivate themselves
-    if (id === req.user.id) {
+    if (typeof isActive !== "boolean") {
+      return res.status(400).json({
+        code: "INVALID_STATUS",
+        message: "isActive must be true or false",
+      });
+    }
+
+    // Prevent admins from deactivate themselves
+    if (id === req.user.id && isActive === false) {
       return res.status(400).json({
         code: "CANNOT_DEACTIVATE_SELF",
         message: "You cannot deactivate your own account",
@@ -193,19 +201,18 @@ export async function toggleDeactivateUser(req, res) {
         .json({ code: "USER_NOT_FOUND", message: "User not found" });
     }
 
-    const updateUser = await prisma.user.update({
+    const updatedUser = await prisma.user.update({
       where: { id },
-      data: {
-        isActive: !targetUser.isActive,
-        updatedById: req.user.id,
-      },
+      data: { isActive, updatedById: req.user.id },
       select: USER_SELECT,
     });
 
-    res.json({ user: updateUser });
+    res.json({ user: updatedUser });
   } catch (error) {
-    console.error("Toggle deactivate error:", error);
-    res.status(500).json({ message: "Something went wrong, please try again" });
+    console.error("Set active user error:", error);
+    res
+      .status(500)
+      .json({ message: "Something went wrong, please try again." });
   }
 }
 
@@ -229,7 +236,7 @@ export async function resetUserPassword(req, res) {
 
     const passwordHash = await bcrypt.hash(defaultPassword, 10);
 
-    const updateUser = await prisma.user.update({
+    const updatedUser = await prisma.user.update({
       where: { id },
       data: {
         passwordHash,
@@ -239,7 +246,7 @@ export async function resetUserPassword(req, res) {
       select: USER_SELECT,
     });
 
-    res.json({ user: updateUser, message: "Password reset successfully" });
+    res.json({ user: updatedUser, message: "Password reset successfully" });
   } catch (error) {
     console.error("Reset password error:", error);
     res

@@ -9,6 +9,7 @@ import {
 import { getUser, logout } from "./lib/auth.js";
 import Navbar from "./components/Navbar";
 import HomePage from "./pages/public/HomePage.jsx";
+import DashboardPage from "./pages/staff/DashboardPage.jsx";
 import StaffLoginPage from "./components/StaffLoginPage";
 import ChangePasswordPage from "./components/ChangePasswordPage";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
@@ -130,6 +131,10 @@ export default function App() {
 
           {/* Loged-in user only */}
           <Route element={<ProtectedRoute user={user} />}>
+            <Route
+              path="/dashboard"
+              element={<DashboardPage lang={lang} user={user} />}
+            />
             <Route
               path="/change-password"
               element={

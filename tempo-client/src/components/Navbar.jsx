@@ -10,6 +10,7 @@ export default function Navbar({ lang, setLang, user, onLogout }) {
   const t = {
     th: {
       home: "หน้าแรก",
+      dashboard: "จัดการ",
       courses: "คอร์สเรียน",
       products: "สินค้า",
       about: "เกี่ยวกับเรา",
@@ -19,6 +20,7 @@ export default function Navbar({ lang, setLang, user, onLogout }) {
     },
     en: {
       home: "Home",
+      dashboard: "Dashboard",
       courses: "Courses",
       products: "Products",
       about: "About",
@@ -57,6 +59,8 @@ export default function Navbar({ lang, setLang, user, onLogout }) {
         { to: "/courses", label: t.courses },
         { to: "/products", label: t.products },
         { to: "/about", label: t.about },
+        // Dashboard link if staff loged in and not required password change
+        ...(user ? [{ to: "/dashboard", label: t.dashboard }] : []),
       ];
 
   // Name, role by lang
@@ -116,17 +120,28 @@ export default function Navbar({ lang, setLang, user, onLogout }) {
 
         {/* Desktop navigation Links */}
         <div className="hidden md:flex items-center gap-8 text-sm font-medium tracking-wide">
-          {publicLinks.map((link) => (
-            <NavLink
-              key={link.to}
-              to={link.to}
-              end={link.end}
-              onClick={closeMenus}
-              className={desktopLinkClass}
-            >
-              {link.label}
-            </NavLink>
-          ))}
+          {publicLinks.map((link) => {
+            const isDashboard = link.to === "/dashboard";
+            return (
+              <NavLink
+                key={link.to}
+                to={link.to}
+                end={link.end}
+                onClick={closeMenus}
+                className={({ isActive }) =>
+                  isDashboard
+                    ? `px-3.5 py-1.5 rounded-full border text-xs font-semibold tracking-wider uppercase transition shadow-sm ${
+                        isActive
+                          ? "bg-amber-500 text-slate-950 border-amber-400 font-bold"
+                          : "bg-amber-500/10 text-amber-400 border-amber-500/30 hover:bg-amber-500/20 hover:border-amber-500/50"
+                      }`
+                    : `transition ${isActive ? "text-amber-400" : "hover:text-amber-400"}`
+                }
+              >
+                {link.label}
+              </NavLink>
+            );
+          })}
         </div>
 
         {/* Right Area (Desktop): Language Toggle & Staff login */}
@@ -170,6 +185,15 @@ export default function Navbar({ lang, setLang, user, onLogout }) {
 
               {userMenuOpen && (
                 <div className="absolute right-0 mt-2 w-56 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden">
+                  {!user.mustChangePassword && (
+                    <Link
+                      to="/dashboard"
+                      onClick={closeMenus}
+                      className="block w-full text-left px-4 py-3 text-sm text-slate-200 hover:bg-slate-800 transition md:hidden"
+                    >
+                      {t.dashboard}
+                    </Link>
+                  )}
                   <Link
                     to="/change-password"
                     onClick={closeMenus}
@@ -228,18 +252,29 @@ export default function Navbar({ lang, setLang, user, onLogout }) {
       {mobileMenuOpen && (
         <div className="md:hidden bg-slate-900 border-b border-slate-800 text-sm">
           {/* Public pages */}
-          <div className="px-6 py-3 flex flex-col">
-            {publicLinks.map((link) => (
-              <NavLink
-                key={link.to}
-                to={link.to}
-                end={link.end}
-                onClick={closeMenus}
-                className={mobileLinkClass}
-              >
-                {link.label}
-              </NavLink>
-            ))}
+          <div className="px-6 py-3 flex flex-col gap-1">
+            {publicLinks.map((link) => {
+              const isDashboard = link.to === "/dashboard";
+              return (
+                <NavLink
+                  key={link.to}
+                  to={link.to}
+                  end={link.end}
+                  onClick={closeMenus}
+                  className={({ isActive }) =>
+                    isDashboard
+                      ? `my-1 py-2 px-4 rounded-xl text-xs font-bold uppercase tracking-wider text-center border ${
+                          isActive
+                            ? "bg-amber-500 text-slate-950 border-amber-400"
+                            : "bg-amber-500/10 text-amber-400 border-amber-500/30"
+                        }`
+                      : `block py-3 ${isActive ? "text-amber-400" : ""}`
+                  }
+                >
+                  {link.label}
+                </NavLink>
+              );
+            })}
           </div>
 
           {/* Staff section */}
