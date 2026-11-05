@@ -8,7 +8,7 @@ export default function DashboardPage({ lang, user }) {
       usersCardTitle: "ผู้ใช้งาน-นักเรียน",
       usersCardDesc: "เพิ่ม ลบ แก้ไขข้อมูลผู้ใช้งาน กำหนดสิทธิ์การใช้งานระบบ",
       accessButton: "เข้าสู่ระบบจัดการ",
-      restricted: "สำหรับผู้ดูแลระบบ (Admin) เท่านั้น",
+      restricted: "ท่านไม่มีสิทธิ์เข้าถึงส่วนนี้",
     },
     en: {
       title: "Main dashboard",
@@ -16,14 +16,15 @@ export default function DashboardPage({ lang, user }) {
       usersCardTitle: "User management",
       usersCardDesc: "Add, edit, remove users and manage system permissions.",
       accessButton: "Open management",
-      restricted: "Restricted to Administrators",
+      restricted: "ํYou don't have permission to access this section",
     },
   }[lang];
 
   const isAdmin =
     user?.role === "ADMIN" ||
     user?.Role === "ADMIN" ||
-    user?.role === "MANAGER";
+    user?.role === "MANAGER" ||
+    user?.role === "STAFF";
 
   return (
     <div className="min-h-[calc(100vh-5rem)] bg-slate-950 text-slate-100 py-12 px-4 sm:px-6 lg:px-8">
@@ -39,7 +40,7 @@ export default function DashboardPage({ lang, user }) {
         {/* Dashboard Grid Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* User management card */}
-          <div className="bg-slate-900 border border-slate-800 rounded-b-2xl p-6 flex flex-col justify-between shadow-xl relative overflow-hidden group hover:border-amber-500/10 transition">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between shadow-xl relative overflow-hidden group hover:border-amber-500/50 transition">
             <div>
               <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 font-bold text-xl mb-4 group-hover:scale-110 transition">
                 👥

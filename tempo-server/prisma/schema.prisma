@@ -65,14 +65,13 @@ model Branch {
 model UserBranch {
   userId              String
   branchId            String
-  role                Role
   createdAt           DateTime    @default(now())
   createdById         String
 
   user                User        @relation(fields: [userId], references: [id])
   branch              Branch      @relation(fields: [branchId], references: [id])
 
-  @@id([userId, branchId, role])
+  @@id([userId, branchId])
   @@index([branchId])
   @@map("user_branches")
 }

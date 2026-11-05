@@ -1,5 +1,12 @@
 import jwt from "jsonwebtoken";
 import prisma from "../lib/prisma.js";
+import { isStaffRole } from "../lib/roles.js";
+
+function authRequired(res) {
+  return res
+    .status(401)
+    .json({ code: "AUTH_REQUIRED", message: "Authentication required" });
+}
 
 // Shared logic. allowMustChange = true lets a user with
 // mustChangePassword through (only for the change-password route).
@@ -8,15 +15,24 @@ async function authenticate(req, res, next, allowMustChange) {
   const [scheme, token] = header.split(" ");
 
   if (scheme !== "Bearer" || !token) {
-    return res.status(401).json({ message: "Authentication required" });
+    return authRequired(res);
   }
 
   let payload;
   try {
-    payload = jwt.verify(token, process.env.JWT_SECRET);
+    payload = jwt.verify(token, process.env.JWT_SECRET, {
+      algorithms: ["HS256"],
+    });
   } catch (error) {
     // Token is invalid or expires
-    return res.status(401).json({ message: "Invalid or expired token" });
+    return res
+      .status(401)
+      .json({ code: "TOKEN_INVALID", message: "Invalid or expired token" });
+  }
+
+  // Token must carry a user id
+  if (!payload?.userId) {
+    return authRequired(res);
   }
 
   try {
@@ -32,8 +48,9 @@ async function authenticate(req, res, next, allowMustChange) {
       },
     });
 
-    if (!user || !user.isActive) {
-      return res.status(401).json({ message: "Authentication required" });
+    // Missing, disabled, or no longer a staff role -> treat as logged out
+    if (!user || !user.isActive || !isStaffRole(user.role)) {
+      return authRequired(res);
     }
 
     if (user.mustChangePassword && !allowMustChange) {
@@ -71,7 +88,9 @@ export function requireAuthForPasswordChange(req, res, next) {
 export function requireRole(...allowRoles) {
   return (req, res, next) => {
     if (!req.user || !allowRoles.includes(req.user.role)) {
-      return res.status(403).json({ message: "Permission denied" });
+      return res
+        .status(403)
+        .json({ code: "FORBIDDEN", message: "Permission denied" });
     }
     next();
   };

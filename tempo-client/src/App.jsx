@@ -66,7 +66,9 @@ export default function App() {
   // the user should land on the home page.
   const from = location.state?.from;
   const afterLogin =
-    from && from !== "/change-password" && from !== "/login" ? from : "/";
+    from && from !== "/change-password" && from !== "/login"
+      ? from
+      : "/dashboard";
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">

@@ -1,9 +1,24 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import prisma from "../lib/prisma.js";
+import { STAFF_ROLES } from "../lib/roles.js";
 
-// Role allowed to sign in through the staff portal
-const STAFF_ROLES = ["ADMIN", "MANAGER", "STAFF", "TEACHER"];
+const BRANCH_SELECT = { id: true, code: true, nameTh: true, nameEn: true };
+
+// Active branches this user can work in
+// Admin: every active branch. Others: only branches link in UserBranch
+export async function getAccessibleBranches(user) {
+  return prisma.branch.findMany({
+    where: {
+      isActive: true,
+      ...(user.role === "ADMIN"
+        ? {}
+        : { userAccess: { some: { userId: user.id } } }),
+    },
+    select: BRANCH_SELECT,
+    orderBy: { code: "ASC" },
+  });
+}
 
 // POST /api/auth/login
 export async function login(req, res) {
@@ -18,10 +33,8 @@ export async function login(req, res) {
         .json({ message: "Please enter email and password" });
     }
 
-    // 2. Find the user
+    // 2. Find the user and check the password
     const user = await prisma.user.findUnique({ where: { email } });
-
-    // Check password
     const passwordOK =
       user && (await bcrypt.compare(password, user.passwordHash));
     if (!passwordOK) {
@@ -35,12 +48,15 @@ export async function login(req, res) {
       return res.status(401).json({ message: "Invalid email or password." });
     }
 
-    // 5. Block inactive account
+    // 4. Block inactive account
     if (!user.isActive) {
       return res
         .status(403)
         .json({ message: "This account has been disabled." });
     }
+
+    // Branches this user can work in (may be empty)
+    const branches = await getAccessibleBranches(user);
 
     // 6. Create a token
     const token = jwt.sign(
@@ -49,7 +65,7 @@ export async function login(req, res) {
       { expiresIn: "8h" },
     );
 
-    // Send back the token and user info (with no passwordHash)
+    // 7. Send back the token, user info, branches list
     res.json({
       token,
       user: {
@@ -59,6 +75,7 @@ export async function login(req, res) {
         fullNameEn: user.fullNameEn,
         role: user.role,
         mustChangePassword: user.mustChangePassword,
+        branches,
       },
     });
   } catch (error) {
@@ -97,7 +114,7 @@ export async function changePassword(req, res) {
       });
     }
 
-    // New password must not be the shared default password
+    // 4. New password must not be the shared default password
     if (
       process.env.DEFAULT_RESET_PASSWORD &&
       newPassword === process.env.DEFAULT_RESET_PASSWORD
@@ -108,13 +125,13 @@ export async function changePassword(req, res) {
       });
     }
 
-    // 4. Find the user from the token (req.user.id), not from the request body
+    // 5. Find the user from the token (req.user.id), not from the request body
     const user = await prisma.user.findUnique({ where: { id: req.user.id } });
     if (!user || !user.isActive) {
       return res.status(401).json({ message: "Authentication is required" });
     }
 
-    // 5. Check the current password
+    // 6. Check the current password
     const currentOK = await bcrypt.compare(currentPassword, user.passwordHash);
     if (!currentOK) {
       return res.status(400).json({
@@ -123,7 +140,7 @@ export async function changePassword(req, res) {
       });
     }
 
-    // 6. Save the new hash
+    // 7. Save the new hash
     const passwordHash = await bcrypt.hash(newPassword, 10);
     await prisma.user.update({
       where: { id: user.id },
