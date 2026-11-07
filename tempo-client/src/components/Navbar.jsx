@@ -1,11 +1,21 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 
-export default function Navbar({ lang, setLang, user, onLogout }) {
+export default function Navbar({
+  lang,
+  setLang,
+  user,
+  onLogout,
+  branches = [],
+  currentBranch,
+  onBranchChange,
+}) {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [branchMenuOpen, setBranchMenuOpen] = useState(false);
   const userMenuRef = useRef(null);
+  const branchMenuRef = useRef(null);
 
   const t = {
     th: {
@@ -17,6 +27,9 @@ export default function Navbar({ lang, setLang, user, onLogout }) {
       login: "สำหรับพนักงาน",
       changePassword: "เปลี่ยนรหัสผ่าน",
       logout: "ออกจากระบบ",
+      branch: "สาขา",
+      noBranch: "ยังไม่กำหนดสาขา",
+      switchBranch: "เลือกสาขา",
     },
     en: {
       home: "Home",
@@ -27,6 +40,9 @@ export default function Navbar({ lang, setLang, user, onLogout }) {
       login: "Staff Portal",
       changePassword: "Change Password",
       logout: "Logout",
+      branch: "Branch",
+      noBranch: "No branch assigned",
+      switchBranch: "Switch branch",
     },
   }[lang];
 
@@ -76,11 +92,26 @@ export default function Navbar({ lang, setLang, user, onLogout }) {
   const rawRole = user ? (user.role ?? user.Role) : "";
   const roleLabel = roleLabels[rawRole] ?? rawRole;
 
+  // Branch name by language, falling back to other language, then the code
+  function branchName(b) {
+    if (!b) return "";
+    return (
+      (lang === "th" ? b.nameTh : b.nameEn) || b.nameEn || b.nameTh || b.code
+    );
+  }
+
+  // Branch area is show only for the logged-in users who don't need to change password
+  const showBranch = !!user && !user.mustChangePassword;
+  const activeBranch = currentBranch ?? branches[0] ?? null;
+
   // Close the desktop user dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(e) {
       if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
         setUserMenuOpen(false);
+      }
+      if (branchMenuRef.current && !branchMenuRef.current.contains(e.target)) {
+        setBranchMenuOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -90,11 +121,17 @@ export default function Navbar({ lang, setLang, user, onLogout }) {
   function closeMenus() {
     setMobileMenuOpen(false);
     setUserMenuOpen(false);
+    setBranchMenuOpen(false);
   }
 
   function handleLogout() {
     closeMenus();
     onLogout();
+  }
+
+  function handleSelectBranch(branchId) {
+    closeMenus();
+    onBranchChange?.(branchId);
   }
 
   // Link styles: the current page is highlighted; portal links use a pill style
@@ -153,8 +190,72 @@ export default function Navbar({ lang, setLang, user, onLogout }) {
           ))}
         </div>
 
-        {/* Right area (desktop): language toggle & staff menu */}
+        {/* Right area (desktop): branch, language toggle & staff menu */}
         <div className="hidden md:flex items-center gap-5">
+          {/* Branch: 0 = waring, 1 = plain label, 2+ = dropdown */}
+          {showBranch &&
+            (branches.length === 0 ? (
+              <span className="text-[11px] font-semibold text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded-full px-3 py-1.5">
+                {t.noBranch}
+              </span>
+            ) : branches.length === 1 ? (
+              <span className="flex items-center gap-2 bg-slate-900 border border-slate-800 rounded-full px-3 py-1.5 text-xs">
+                <span className="text-[10px] tracking-wider text-slate-400 uppercase">
+                  {t.branch}
+                </span>
+                <span className="font-semibold text-slate-100 max-w-32 truncate">
+                  {branchName(activeBranch)}
+                </span>
+              </span>
+            ) : (
+              <div className="relative" ref={branchMenuRef}>
+                <button
+                  onClick={() => setBranchMenuOpen(!branchMenuOpen)}
+                  className="flex items-center gap-2 bg-slate-900 border border-slate-800 hover:border-amber-500/60 rounded-full px-3 py-1.5 text-xs transition"
+                >
+                  <span className="text-[10px] tracking-wider text-slate-400 uppercase">
+                    {t.branch}
+                  </span>
+                  <span className="font-semibold text-slate-100 max-w-32 truncate">
+                    {branchName(activeBranch)}
+                  </span>
+                  <span
+                    className={`text-slate-400 transition-transform ${branchMenuOpen ? "rotate-180" : ""}`}
+                  >
+                    ▾
+                  </span>
+                </button>
+
+                {branchMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-60 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden">
+                    <p className="px-4 pt-3 pb-2 text-[10px] tracking-wider text-slate-500 uppercase">
+                      {t.switchBranch}
+                    </p>
+                    {branches.map((b) => {
+                      const active = b.id === activeBranch?.id;
+                      return (
+                        <button
+                          key={b.id}
+                          onClick={() => handleSelectBranch(b.id)}
+                          className={`w-full flex items-center justify-between gap-3 px-4 py-2.5 text-sm text-left transition ${
+                            active
+                              ? "text-amber-400 bg-amber-500/10 font-semibold"
+                              : "text-slate-200 hover:bg-slate-800"
+                          }`}
+                        >
+                          <span className="truncate">{branchName(b)}</span>
+                          <span className="text-[10px] text-slate-500">
+                            {active ? "✓ " : ""}
+                            {b.code}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            ))}
+
           {/* Language select */}
           <div className="flex items-center bg-slate-900 border border-slate-800 rounded-full p-1 text-xs font-semibold">
             <button
@@ -276,6 +377,46 @@ export default function Navbar({ lang, setLang, user, onLogout }) {
                     {roleLabel}
                   </span>
                 </div>
+
+                {/* Branch (mobile): 0 = warning, 1 = label, 2+ = list to tap */}
+                {showBranch && (
+                  <div className="py-3 border-b border-slate-800">
+                    <p className="text-[10px] tracking-wider text-slate-500 uppercase mb-2">
+                      {branches.length > 1 ? t.switchBranch : t.branch}
+                    </p>
+                    {branches.length === 0 ? (
+                      <p className="text-[10px] text-amber-300">{t.noBranch}</p>
+                    ) : branches.length === 1 ? (
+                      <p className="text-slate-100">
+                        {branchName(activeBranch)}
+                      </p>
+                    ) : (
+                      <div className="flex flex-col gap-1">
+                        {branches.map((b) => {
+                          const active = b.id === activeBranch?.id;
+                          return (
+                            <button
+                              key={b.id}
+                              onClick={() => handleSelectBranch(b.id)}
+                              className={`flex items-center justify-between px-3 py-2 rounded-xl text-left border transition ${
+                                active
+                                  ? "text-amber-400 bg-amber-500/10 border-amber-500/30 font-semibold"
+                                  : "text-slate-200 border-transparent"
+                              }`}
+                            >
+                              <span className="truncate">{branchName(b)}</span>
+                              <span className="text-[10px] text-slate-500">
+                                {active ? "✓ " : ""}
+                                {b.code}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 <Link
                   to="/change-password"
                   onClick={closeMenus}

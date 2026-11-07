@@ -7,9 +7,14 @@ import {
   useLocation,
 } from "react-router-dom";
 import { getUser, logout } from "./lib/auth.js";
+import {
+  getBranches,
+  getCurrentBranch,
+  setCurrentBranch,
+} from "./lib/session.js";
 import Navbar from "./components/Navbar";
 import HomePage from "./pages/public/HomePage.jsx";
-import DashboardPage from "./pages/staff/DashboardPage.jsx";
+import DashboardPage from "./pages/protected/DashboardPage.jsx";
 import StaffLoginPage from "./components/StaffLoginPage";
 import ChangePasswordPage from "./components/ChangePasswordPage";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
@@ -27,12 +32,19 @@ function PlaceholderPage({ title, text }) {
 export default function App() {
   const [lang, setLang] = useState("th");
   const [user, setUser] = useState(getUser());
+  // Branch state (read from the session saved at login)
+  const [branches, setBranches] = useState(() => getBranches());
+  const [currentBranch, setCurrentBranchState] = useState(() =>
+    getCurrentBranch(),
+  );
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
     function onExpired() {
       setUser(null);
+      setBranches([]);
+      setCurrentBranchState(null);
       navigate("/login", { replace: true });
     }
 
@@ -41,24 +53,43 @@ export default function App() {
       setUser(getUser());
     }
 
+    // api.js removed a branch the server rejected: reload the list
+    // (getCurrentBranch falls back to another branch, or null)
+    function onBranchInvalid() {
+      setBranches(getBranches());
+      setCurrentBranchState(getCurrentBranch());
+    }
+
     window.addEventListener("auth:expired", onExpired);
     window.addEventListener("auth:must-change-password", onMustChange);
+    window.addEventListener("auth:branch-invalid", onBranchInvalid);
 
     return () => {
       window.removeEventListener("auth:expired", onExpired);
       window.removeEventListener("auth:must-change-password", onMustChange);
+      window.removeEventListener("auth:branch-invalid", onBranchInvalid);
     };
   }, [navigate]);
 
   function handleLoginSuccess() {
     // The /login route sees the new user and redirects
     setUser(getUser());
+    setBranches(getBranches());
+    setCurrentBranchState(getCurrentBranch());
   }
 
   function handleLogout() {
     logout();
     setUser(null);
+    setBranches([]);
+    setCurrentBranchState(null);
     navigate("/login", { replace: true });
+  }
+
+  function handleBranchChange(branchId) {
+    if (branchId === currentBranch?.id) return;
+    setCurrentBranch(branchId); // saved, so the next requested sends the new X-Branch_Id
+    setCurrentBranchState(getCurrentBranch());
   }
 
   // Page to open after login. Never return to /change-password:
@@ -77,9 +108,13 @@ export default function App() {
         setLang={setLang}
         user={user}
         onLogout={handleLogout}
+        branches={branches}
+        currentBranch={currentBranch}
+        onBranchChange={handleBranchChange}
       />
 
-      <main>
+      {/* key: switching branch remounts the pages so they reload data for the new branch */}
+      <main key={currentBranch?.id ?? "no-branch"}>
         <Routes>
           {/* Login: logged-in users go back to the page they tried to open */}
           <Route
@@ -135,7 +170,13 @@ export default function App() {
           <Route element={<ProtectedRoute user={user} />}>
             <Route
               path="/dashboard"
-              element={<DashboardPage lang={lang} user={user} />}
+              element={
+                <DashboardPage
+                  lang={lang}
+                  user={user}
+                  currentBranch={currentBranch}
+                />
+              }
             />
             <Route
               path="/change-password"

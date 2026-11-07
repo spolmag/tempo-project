@@ -1,5 +1,15 @@
 import { apiFetch } from "./api.js";
-import { saveSession, clearSession, getStoredUser } from "./session.js";
+import {
+  saveSession,
+  clearSession,
+  getStoredUser,
+  getCurrentBranch,
+  setCurrentBranch,
+} from "./session.js";
+
+// Branch helpers for components
+export { getBranches, getCurrentBranch } from "./session.js";
+export { setCurrentBranch as selectBranch } from "./session.js";
 
 export async function login(email, password) {
   const data = await apiFetch("/api/auth/login", {
@@ -7,6 +17,11 @@ export async function login(email, password) {
     body: JSON.stringify({ email, password }),
   });
   saveSession(data.token, data.user);
+
+  // Pick the starting branch (last used, or the first one)
+  const branch = getCurrentBranch();
+  if (branch) setCurrentBranch(branch.id);
+
   return data.user;
 }
 

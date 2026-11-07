@@ -5,7 +5,14 @@ import authRoutes from "./routes/authRoutes.js";
 import adminUserRoutes from "./routes/adminUsersRoutes.js";
 
 const app = express();
-app.use(cors({ origin: process.env.CLIENT_URL || "http://localhost:5173" }));
+
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization", "X-Branch-Id"],
+  }),
+);
 app.use(express.json());
 
 app.get("/", (req, res) => {

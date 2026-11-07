@@ -16,7 +16,7 @@ export async function getAccessibleBranches(user) {
         : { userAccess: { some: { userId: user.id } } }),
     },
     select: BRANCH_SELECT,
-    orderBy: { code: "ASC" },
+    orderBy: { code: "asc" },
   });
 }
 

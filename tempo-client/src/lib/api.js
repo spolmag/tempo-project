@@ -1,10 +1,18 @@
-import { getToken, clearSession, updateStoredUser } from "./session.js";
+import {
+  getToken,
+  clearSession,
+  updateStoredUser,
+  getCurrentBranch,
+  removeBranch,
+} from "./session.js";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 export async function apiFetch(path, options = {}) {
   // Returns null if there is no token or it has expired
   const token = getToken();
+  // Current branch (null when logged out or no branch assigned)
+  const branch = token ? getCurrentBranch() : null;
 
   let res;
   try {
@@ -13,7 +21,8 @@ export async function apiFetch(path, options = {}) {
       headers: {
         "Content-Type": "application/json",
         ...(token && { Authorization: `Bearer ${token}` }),
-        ...options.headers,
+        ...(branch && { "X-Branch-Id": branch.id }),
+        ...options.headers, // a caller can still overide any header
       },
     });
   } catch {
@@ -36,6 +45,13 @@ export async function apiFetch(path, options = {}) {
     if (res.status === 403 && data.code === "PASSWORD_CHANGE_REQUIRED") {
       updateStoredUser({ mustChangePassword: true });
       window.dispatchEvent(new Event("auth:must-change-password"));
+    }
+
+    // Branch access was remove or the branch was close while logged in:
+    // Drop it from the list so the next request uses another branch
+    if (res.status === 403 && data.code === "BRANCH_FORBIDDEN" && branch) {
+      removeBranch(branch.id);
+      window.dispatchEvent(new Event("auth:branch-invalid"));
     }
 
     const error = new Error(data.message || "Request failed");
