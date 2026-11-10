@@ -5,9 +5,9 @@ export default function DashboardPage({ lang, user }) {
     th: {
       title: "จัดการงานสาขา",
       subTitle: "ยินดีต้อนรับสู่หน้าจัดการงานสาขา",
-      usersCardTitle: "ผู้ใช้งาน-นักเรียน",
+      usersCardTitle: "ผู้ใช้งาน",
       usersCardDesc: "เพิ่ม ลบ แก้ไขข้อมูลผู้ใช้งาน กำหนดสิทธิ์การใช้งานระบบ",
-      accessButton: "เข้าสู่ระบบจัดการ",
+      accessButton: "จัดการ",
       restricted: "ท่านไม่มีสิทธิ์เข้าถึงส่วนนี้",
     },
     en: {

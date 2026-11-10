@@ -12,11 +12,14 @@ import {
   getCurrentBranch,
   setCurrentBranch,
 } from "./lib/session.js";
-import Navbar from "./components/Navbar";
+import Navbar from "./components/Navbar.jsx";
 import HomePage from "./pages/public/HomePage.jsx";
 import DashboardPage from "./pages/protected/DashboardPage.jsx";
-import StaffLoginPage from "./components/StaffLoginPage";
-import ChangePasswordPage from "./components/ChangePasswordPage";
+import UserListPage from "./pages/protected/admin/UserListPage.jsx";
+import UserCreatePage from "./pages/protected/admin/UserCreatePage.jsx";
+import UserEditPage from "./pages/protected/admin/UserEditPage.jsx";
+import StaffLoginPage from "./components/StaffLoginPage.jsx";
+import ChangePasswordPage from "./components/ChangePasswordPage.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 
 // Temporary pages until the real ones are built
@@ -188,6 +191,21 @@ export default function App() {
                   onLogout={handleLogout}
                 />
               }
+            />
+          </Route>
+          {/* Admin only */}
+          <Route element={<ProtectedRoute user={user} roles={["ADMIN"]} />}>
+            <Route
+              path="/admin/users"
+              element={<UserListPage lang={lang} user={user} />}
+            />
+            <Route
+              path="/admin/users/new"
+              element={<UserCreatePage lang={lang} />}
+            />
+            <Route
+              path="/admin/users/:id/edit"
+              element={<UserEditPage lang={lang} user={user} />}
             />
           </Route>
 

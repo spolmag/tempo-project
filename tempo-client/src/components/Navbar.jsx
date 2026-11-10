@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Link, NavLink, useLocation } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 
 export default function Navbar({
   lang,
@@ -10,7 +10,6 @@ export default function Navbar({
   currentBranch,
   onBranchChange,
 }) {
-  const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [branchMenuOpen, setBranchMenuOpen] = useState(false);
@@ -30,6 +29,7 @@ export default function Navbar({
       branch: "สาขา",
       noBranch: "ยังไม่กำหนดสาขา",
       switchBranch: "เลือกสาขา",
+      users: "ผู้ใช้งาน",
     },
     en: {
       home: "Home",
@@ -43,6 +43,7 @@ export default function Navbar({
       branch: "Branch",
       noBranch: "No branch assigned",
       switchBranch: "Switch branch",
+      users: "Users",
     },
   }[lang];
 
@@ -79,6 +80,9 @@ export default function Navbar({
         { to: "/about", label: t.about },
         ...(user
           ? [{ to: "/dashboard", label: t.dashboard, highlight: true }]
+          : []),
+        ...(user?.role === "ADMIN"
+          ? [{ to: "/admin/users", label: t.users, highlight: true }]
           : []),
       ];
 
@@ -314,7 +318,6 @@ export default function Navbar({
           ) : (
             <Link
               to="/login"
-              state={{ from: location.pathname }}
               onClick={closeMenus}
               className="bg-linear-to-r from-amber-500 to-amber-600 text-slate-950 px-5 py-2 rounded-full text-xs font-bold tracking-wider uppercase shadow-md hover:from-amber-400 hover:to-amber-500 transition"
             >
@@ -434,7 +437,6 @@ export default function Navbar({
             ) : (
               <Link
                 to="/login"
-                state={{ from: location.pathname }}
                 onClick={closeMenus}
                 className="block w-full text-center bg-linear-to-r from-amber-500 to-amber-600 text-slate-950 py-3 rounded-full text-xs font-bold tracking-wider uppercase"
               >
