@@ -12,9 +12,8 @@ const ROLES = ["ADMIN", "MANAGER", "STAFF", "TEACHER"];
 const TEXT = {
   th: {
     title: "จัดการผู้ใช้งาน",
-    add: "+ เพิ่มผู้ใช้",
+    add: "➕ เพิ่มผู้ใช้",
     search: "ค้นหาชื่อหรืออีเมล",
-    searchBtn: "ค้นหา",
     allRoles: "ทุกตำแหน่ง",
     allStatus: "ทุกสถานะ",
     active: "สถานะบัญชั-เปิด",
@@ -47,9 +46,8 @@ const TEXT = {
   },
   en: {
     title: "User management",
-    add: "+ Add user",
+    add: "➕ Add user",
     search: "Search name or email",
-    searchBtn: "Search",
     allRoles: "All roles",
     allStatus: "All status",
     active: "Active",
@@ -80,7 +78,6 @@ const TEXT = {
     },
   },
 };
-//
 
 const selectClass =
   "bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-amber-500/60";
@@ -92,21 +89,29 @@ export default function UserListPage({ lang, user: me }) {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  // Notice key (created/updated/...), so the text follows the language
   const [notice, setNotice] = useState(location.state?.notice ?? "");
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState({ q: "", role: "", active: "" });
   const [busyId, setBusyId] = useState(null);
 
-  // Load users whenver the filters change.
-  // State is set after the request finishes, not directly in the effect
+  // Real-time search handler with typing delay effect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setFilters((f) => ({ ...f, q: search.trim() }));
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  // Load users whenever filters change
   useEffect(() => {
     let cancelled = false;
+    setLoading(true);
     listUsers(filters)
       .then((data) => {
-        if (cancelled) return;
-        setUsers(data.users ?? []);
-        setError("");
+        if (!cancelled) {
+          setUsers(data.users ?? []);
+          setError("");
+        }
       })
       .catch((err) => {
         if (!cancelled) setError(err.message || TEXT.en.loadError);
@@ -118,17 +123,6 @@ export default function UserListPage({ lang, user: me }) {
       cancelled = true;
     };
   }, [filters]);
-
-  // Change filters and show "Loading..." (the effect above does the fetch)
-  function updateFilters(patch) {
-    setLoading(true);
-    setFilters((f) => ({ ...f, ...patch }));
-  }
-
-  function handleSearch(e) {
-    e.preventDefault();
-    updateFilters({ q: search.trim() });
-  }
 
   function replaceUser(updated) {
     setUsers((list) =>
@@ -184,25 +178,29 @@ export default function UserListPage({ lang, user: me }) {
         </Link>
       </div>
 
-      {/* Filters */}
+      {/* Filters & Search with Clear Button */}
       <div className="flex flex-wrap gap-3 mb-6">
-        <form onSubmit={handleSearch} className="flex gap-2 flex-1 min-w-64">
+        <div className="relative flex-1 min-w-64">
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={t.search}
-            className={`${selectClass} flex-1`}
+            className={`${selectClass} w-full pr-10`}
           />
-          <button
-            type="submit"
-            className="px-4 rounded-xl text-sm text-slate-200 border border-slate-700 hover:border-amber-500/60 transition"
-          >
-            {t.searchBtn}
-          </button>
-        </form>
+          {search && (
+            <button
+              onClick={() => setSearch("")}
+              type="button"
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-red-500/20 text-red-400 hover:bg-red-500/40 flex items-center justify-center text-xs font-bold transition"
+              title="Clear search"
+            >
+              X
+            </button>
+          )}
+        </div>
         <select
           value={filters.role}
-          onChange={(e) => updateFilters({ role: e.target.value })}
+          onChange={(e) => setFilters((f) => ({ ...f, role: e.target.value }))}
           className={selectClass}
         >
           <option value="">{t.allRoles}</option>
@@ -214,7 +212,9 @@ export default function UserListPage({ lang, user: me }) {
         </select>
         <select
           value={filters.active}
-          onChange={(e) => updateFilters({ active: e.target.value })}
+          onChange={(e) =>
+            setFilters((f) => ({ ...f, active: e.target.value }))
+          }
           className={selectClass}
         >
           <option value="">{t.allStatus}</option>

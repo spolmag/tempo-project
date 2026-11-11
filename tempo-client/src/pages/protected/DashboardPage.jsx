@@ -1,30 +1,94 @@
 import { Link } from "react-router-dom";
 
-export default function DashboardPage({ lang, user }) {
-  const t = {
-    th: {
-      title: "จัดการงานสาขา",
-      subTitle: "ยินดีต้อนรับสู่หน้าจัดการงานสาขา",
-      usersCardTitle: "ผู้ใช้งาน",
-      usersCardDesc: "เพิ่ม ลบ แก้ไขข้อมูลผู้ใช้งาน กำหนดสิทธิ์การใช้งานระบบ",
-      accessButton: "จัดการ",
-      restricted: "ท่านไม่มีสิทธิ์เข้าถึงส่วนนี้",
-    },
-    en: {
-      title: "Main dashboard",
-      subTitle: "Welcome to management portal",
-      usersCardTitle: "User management",
-      usersCardDesc: "Add, edit, remove users and manage system permissions.",
-      accessButton: "Open management",
-      restricted: "ํYou don't have permission to access this section",
-    },
-  }[lang];
+// Each card: who can see it and where it goes.
+// ready: false shows "Comimg soon" instead of a link.
+const CARDS = [
+  {
+    key: "staff",
+    icon: "👥",
+    to: "/admin/users",
+    roles: ["ADMIN"],
+    ready: true,
+  },
+  {
+    key: "students",
+    icon: "🎓",
+    to: "/students",
+    roles: ["ADMIN", "MANAGER", "STAFF"],
+    ready: false,
+  },
+  {
+    key: "branches",
+    icon: "🏫",
+    to: "/admin/branches",
+    roles: ["ADMIN"],
+    ready: false,
+  },
+  {
+    key: "classes",
+    icon: "🎹",
+    to: "/teacher/classes",
+    roles: ["TEACHER"],
+    ready: false,
+  },
+];
 
-  const isAdmin =
-    user?.role === "ADMIN" ||
-    user?.Role === "ADMIN" ||
-    user?.role === "MANAGER" ||
-    user?.role === "STAFF";
+const TEXT = {
+  th: {
+    title: "จัดการงานสาขา",
+    subTitle: "ยินดีต้อนรับสู่หน้าจัดการงานสาขา",
+    open: "จัดการ",
+    soon: "เร็วๆนี้",
+    empty: "ท่านไม่มีสิทธิ์เข้าถึงส่วนนี้",
+    cards: {
+      staff: {
+        title: "พนักงาน",
+        desc: "เพิ่ม, แก้ไข, กำหนดสิทธิ์ เปลี่ยนแปลงรายละเอียดพนักงาน",
+      },
+      students: {
+        title: "นักเรียน-ผู้ปกครอง",
+        desc: "ลงทะเบียนนักเรียนใหม่ จัดการข้อมูลนักเรียน-ผู้ปกครอง",
+      },
+      branches: {
+        title: "สาขา",
+        desc: "เพิ่ม, แก้ไขข้อมูลาขา",
+      },
+      classes: {
+        title: "คลาสเรียน",
+        desc: "ตารางคลาส-รายชื่อนักเรียน",
+      },
+    },
+  },
+  en: {
+    title: "Main dashboard",
+    subTitle: "Welcome to the management portal",
+    open: "Open",
+    soon: "Coming soon",
+    empty: "No tools are available for your role yet.",
+    cards: {
+      staff: {
+        title: "Staff accounts",
+        desc: "Add, edit and deactivate staff, teacher and manager accounts. Set roles and branches.",
+      },
+      students: {
+        title: "Students & parents",
+        desc: "Register new students and manage student and parent details for your branch.",
+      },
+      branches: {
+        title: "Branches",
+        desc: "Add and edit branches, and turn branches on or off.",
+      },
+      classes: {
+        title: "My class",
+        desc: "See your teaching schedule and the students in your classes.",
+      },
+    },
+  },
+};
+
+export default function DashboardPage({ lang, user }) {
+  const t = TEXT[lang];
+  const cards = CARDS.filter((c) => c.roles.includes(user?.role));
 
   return (
     <div className="min-h-[calc(100vh-5rem)] bg-slate-950 text-slate-100 py-12 px-4 sm:px-6 lg:px-8">
@@ -37,40 +101,50 @@ export default function DashboardPage({ lang, user }) {
           <p className="mt-2 text-sm text-slate-400">{t.subTitle}</p>
         </div>
 
-        {/* Dashboard Grid Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* User management card */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between shadow-xl relative overflow-hidden group hover:border-amber-500/50 transition">
-            <div>
-              <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 font-bold text-xl mb-4 group-hover:scale-110 transition">
-                👥
-              </div>
-              <h2 className="text-lg font-semibold text-slate-100">
-                {t.usersCardTitle}
-              </h2>
-              <p className="mt-2 text-xs text-slate-400 leading-relaxed">
-                {t.usersCardDesc}
-              </p>
-            </div>
-
-            <div className="mt-6 pt-4 border-t border-slate-800/80 flex items-center justify-between">
-              {isAdmin ? (
-                <Link
-                  to="/admin/users"
-                  className="inline-flex items-center justify-center w-full bg-linear-to-r from-amber-500 to-amber-600 text-slate-950 py-2.5 px-4 rounded-xl text-xs font-bold tracking-wider uppercase shadow-md hover:from-amber-400 hover:to-amber-500 transition"
+        {cards.length === 0 ? (
+          <p className="text-sm text-slate-400">{t.empty}</p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {cards.map((card) => {
+              const text = t.cards[card.key];
+              return (
+                <div
+                  key={card.key}
+                  className={`bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between shadow-xl group transition ${
+                    card.ready ? "hover:border-amber-500/50" : "opacity-70"
+                  }`}
                 >
-                  {t.accessButton} →
-                </Link>
-              ) : (
-                <span className="text-[11px] text-amber-400/80 italic">
-                  {t.restricted}
-                </span>
-              )}
-            </div>
-          </div>
+                  <div>
+                    <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition">
+                      {card.icon}
+                    </div>
+                    <h2 className="text-lg font-semibold text-slate-100">
+                      {text.title}
+                    </h2>
+                    <p className="mt-2 text-xs text-slate-400 leading-relaxed">
+                      {text.desc}
+                    </p>
+                  </div>
 
-          {/* Wait for future module */}
-        </div>
+                  <div className="mt-6 pt-4 border-t border-slate-800/80">
+                    {card.ready ? (
+                      <Link
+                        to={card.to}
+                        className="inline-flex items-center justify-center w-full bg-linear-to-r from-amber-500 to-amber-600 text-slate-950 py-2.5 px-4 rounded-xl text-xs font-bold tracking-wider uppercase shadow-md hover:from-amber-400 hover:to-amber-500 transition"
+                      >
+                        {t.open} ➡️
+                      </Link>
+                    ) : (
+                      <span className="block w-full text-center py-2.5 rounded-xl text-xs font-semibold tracking-wider uppercase text-slate-500 border border-slate-800">
+                        {t.soon}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -8,14 +8,14 @@ import {
 
 const TEXT = {
   th: {
-    back: "← กลับไปหน้าผู้ใช้งาน",
+    back: "⬅️ กลับไปหน้าผู้ใช้งาน",
     title: "เพิ่มผู้ใช้งานใหม่",
     note: "ผู้ใช้งานใหม่ได้รหัสผ่านแรกเริ่มและจะต้องเปลี่ยนรหัสผ่านเมื่อเข้าใช้งานครั้งแรก",
     save: "สร้างผู้ใช้งานใหม่",
     loading: "กำลังโหลด...",
   },
   en: {
-    back: "← Back to user",
+    back: "⬅️ Back to user",
     title: "Add new user",
     note: "New users get the default password and must change it at first login.",
     save: "Create user",

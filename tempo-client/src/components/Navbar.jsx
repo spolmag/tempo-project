@@ -29,7 +29,6 @@ export default function Navbar({
       branch: "สาขา",
       noBranch: "ยังไม่กำหนดสาขา",
       switchBranch: "เลือกสาขา",
-      users: "ผู้ใช้งาน",
     },
     en: {
       home: "Home",
@@ -43,7 +42,6 @@ export default function Navbar({
       branch: "Branch",
       noBranch: "No branch assigned",
       switchBranch: "Switch branch",
-      users: "Users",
     },
   }[lang];
 
@@ -80,9 +78,6 @@ export default function Navbar({
         { to: "/about", label: t.about },
         ...(user
           ? [{ to: "/dashboard", label: t.dashboard, highlight: true }]
-          : []),
-        ...(user?.role === "ADMIN"
-          ? [{ to: "/admin/users", label: t.users, highlight: true }]
           : []),
       ];
 

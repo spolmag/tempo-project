@@ -76,7 +76,7 @@ function readUserInput(body = {}, { partial = false } = {}) {
     return {
       error: {
         code: "MISSING_FIELDS",
-        message: "Email, Thai name and English name are rerquired",
+        message: "Email, Thai name and English name are required",
       },
     };
   }

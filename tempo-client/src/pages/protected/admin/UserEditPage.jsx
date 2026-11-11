@@ -10,13 +10,13 @@ import { userName } from "../../../lib/userLabels.js";
 
 const TEXT = {
   th: {
-    back: "← กลับไปหน้าผู้ใช้งาน",
+    back: "⬅️ กลับไปหน้าผู้ใช้งาน",
     title: "แก้ไขข้อมูลผู้ใช้",
     save: "บันทึก",
     loading: "กำลังโหลด...",
   },
   en: {
-    back: "← Back to user",
+    back: "⬅️ Back to user",
     title: "Edit user",
     save: "Save changes",
     loading: "Loading...",

@@ -74,7 +74,7 @@ function Field({ label, required, hint, children }) {
     <label className="block">
       <span className="block text-xs font-semibold text-slate-400 mb-1.5">
         {label}
-        {required && <span className="text-amber-400">*</span>}
+        {required && <span className="text-amber-400"> *</span>}
       </span>
       {children}
       {hint && (
@@ -153,12 +153,6 @@ export default function UserForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6" noValidate>
-      {showError && (
-        <div className="bg-red-500/10 border border-red-500/30 text-red-300 text-sm rounded-xl px-4 py-3">
-          {showError}
-        </div>
-      )}
-
       <Section title={t.account}>
         <div className="grid sm:grid-cols-2 gap-5">
           <Field label={t.email} required>
@@ -179,11 +173,11 @@ export default function UserForm({
               disabled={isSelf}
               className={inputClass}
             >
-              {roles.map((r) => {
+              {roles.map((r) => (
                 <option key={r} value={r}>
                   {roleLabel(r, lang)}
-                </option>;
-              })}
+                </option>
+              ))}
             </select>
           </Field>
         </div>
@@ -250,7 +244,7 @@ export default function UserForm({
           </Field>
           <Field label={t.addressTh}>
             <textarea
-              name="aderessTh"
+              name="addressTh"
               value={values.addressTh}
               onChange={setField}
               rows={3}
@@ -259,7 +253,7 @@ export default function UserForm({
           </Field>
           <Field label={t.addressEn}>
             <textarea
-              name="aderessEn"
+              name="addressEn"
               value={values.addressEn}
               onChange={setField}
               rows={3}
@@ -306,6 +300,12 @@ export default function UserForm({
           </div>
         )}
       </Section>
+
+      {showError && (
+        <div className="bg-red-500/10 border border-red-500/30 text-red-300 text-sm rounded-xl px-4 py-3">
+          {showError}
+        </div>
+      )}
 
       <div className="flex justify-end gap-3">
         <button
