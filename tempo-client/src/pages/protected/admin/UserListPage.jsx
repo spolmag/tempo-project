@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, replace, useLocation } from "react-router-dom";
 import {
   listUsers,
   setUserActive,
   resetUserPassword,
 } from "../../../services/adminUsers.js";
 import { roleLabel, userName } from "../../../lib/userLabels.js";
+import { getFormError } from "../../../lib/userErrors.js";
 
 const ROLES = ["ADMIN", "MANAGER", "STAFF", "TEACHER"];
 
@@ -13,11 +14,11 @@ const TEXT = {
   th: {
     title: "จัดการผู้ใช้งาน",
     add: "➕ เพิ่มผู้ใช้",
-    search: "ค้นหาชื่อหรืออีเมล",
+    search: "ค้นหาจากชื่อหรืออีเมล",
     allRoles: "ทุกตำแหน่ง",
     allStatus: "ทุกสถานะ",
-    active: "สถานะบัญชั-เปิด",
-    inactive: "สถานะบัญชั-ปิด",
+    active: "สถานะบัญชี-เปิด",
+    inactive: "สถานะบัญชี-ปิด",
     name: "ชื่อ",
     role: "ตำแหน่ง",
     status: "สถานะ",
@@ -31,17 +32,35 @@ const TEXT = {
     loading: "กำลังโหลด...",
     empty: "ไม่พบผู้ใช้งาน",
     loadError: "โหลดรายชื่อไม่สำเร็จ",
-    confirmActivate: "เปลี่ยนสถานะ->เปิด บัญชีผู้ใช้งาน",
-    confirmDeactivate: "เปลี่ยนสถานะ->ปิด บัญชีผู้ใช้งาน",
-    confirmReset: "รีเซ็ตรหัสผ่าน บัญชีผู้ใช้งาน",
-    notice: {
-      created:
-        "สร้างผู้ใช้งานใหม่สำเร็จ ผู้ใช้งานจะต้องเปลี่ยนรหัสผ่านเมื่อเข้าระบบในครั้งแรก",
-      updated: "บันทึกการแก้ไขข้อมูลผู้ใช้งานแล้ว",
-      activated: "เปลี่ยนสถานะ -> เปิดบัญชีผู้ใช้งานแล้ว",
-      deactivated: "เปลี่ยนสถานะ -> ปิดบัญชีผู้ใช้งานแล้ว",
-      reset:
-        "รหัสผ่านรีเซ็ตเป็นรหัสแรกเริ่ม ผู้ใช้ต้องเปลี่ยนรหัสผ่านเมื่อเข้าระบบครั้งถัดไป",
+    cancel: "ยกเลิก",
+    processing: "กำลังดำเนินการ",
+    closeButton: "รับทราบ",
+    modal: {
+      reset: {
+        confirmTitle: "ยืนยันการรีเซ็ตรหัสผ่าน",
+        confirmDesc:
+          "ต้องการรีเซ็ตรหัสผ่านของผู้ใช้งานนี้เป็นรหัสผ่านเริ่มต้นหรือไม่ ผู้ใช้งานจะต้องเปลี่ยนรหัสผ่านในการเข้าระบบครั้งถัดไป",
+        confirmBtn: "ยืยยันรีเซ็ตรหัสผ่าน",
+        successTitle: "รีเซ็ตรหัสผ่านสำเร็จ",
+        successDesc:
+          "รหัสผ่านถูกรีเซ็ตเป็นรหัสเริ่มต้นแล้ว ผู้ใช้งานจะต้องเปลี่ยนรหัสผ่านเมื่อเข้าสู่ระบบครั้งถัดไป",
+      },
+      deactivate: {
+        confirmTitle: "ยืนยันปิดใช้งานบัญชี",
+        confirmDesc:
+          "ต้องการเปลี่ยนสถานะบัญชีผู้ใช้งานนี้เป็นปิดใช้งานหรือไม่ ผู้ใช้งานจะไม่สามารถเข้าระบบได้จนกว่าจะเปิดใช้งานอีกครั้ง",
+        confirmBtn: "ยืนยันปิดใช้งาน",
+        successTitle: "ปิดใช้งานบัญชีสำเร็จ",
+        successDesc: "เปลี่ยนสถานะบัญชีเป็นปิดใช้งานเรียบร้อยแล้ว",
+      },
+      activate: {
+        confirmTitle: "ยืนยันเปิดใช้งานบัญชี",
+        confirmDesc:
+          "ต้องการเปลี่ยนสถานะบัญชีผู้ใช้งานนี้เป็นเปิดใช้งานหรือไม่ ผู้ใช้งานจะสามารถเข้าระบบได้ตามปกติ",
+        confirmBtn: "ยืนยันเปิดใช้งาน",
+        successTitle: "เปิดใช้งานบัญชีสำเร็จ",
+        successDesc: "เปลี่ยนสถานะบัญชีเป็นเปิดใช้งานเรียบร้อยแล้ว",
+      },
     },
   },
   en: {
@@ -65,16 +84,35 @@ const TEXT = {
     loading: "Loading...",
     empty: "No users found",
     loadError: "Could not load users",
-    confirmActivate: "Activate the account of",
-    confirmDeactivate: "Deactivate the account of",
-    confirmReset: "Reset the password of",
-    notice: {
-      created:
-        "User created. They must change the default password at first login",
-      updated: "User details saved",
-      activated: "Account activated",
-      deactivated: "Account deactivated",
-      reset: "Password reset to default. The user must change it at next login",
+    cancel: "Cancel",
+    processing: "Processing...",
+    closeButton: "Got it",
+    modal: {
+      reset: {
+        confirmTitle: "Confirm password reset",
+        confirmDesc:
+          "Are you sure you want to reset this user's password to the default password? They will be required to change it on their next login",
+        confirmBtn: "Reset password",
+        successTitle: "Password reset successfully",
+        successDesc:
+          "The password has been reset to the default password. User must change it on their next login.",
+      },
+      deactivate: {
+        confirmTitle: "Confirm account deactivation",
+        confirmDesc:
+          "Are you sure you want to deactivate this user account? They will not be able to sign in until reactivated.",
+        confirmBtn: "Deactivate account",
+        successTitle: "Account deactivated",
+        successDesc: "The user account has been deactivate",
+      },
+      activate: {
+        confirmTitle: "Confirm account activation",
+        confirmDesc:
+          "Are you sure you want to activate this user account so they can sign in again.",
+        confirmBtn: "Activation account",
+        successTitle: "Account activated",
+        successDesc: "The user account has been activated",
+      },
     },
   },
 };
@@ -84,28 +122,33 @@ const selectClass =
 
 export default function UserListPage({ lang, user: me }) {
   const t = TEXT[lang];
-  const location = useLocation();
 
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [notice, setNotice] = useState(location.state?.notice ?? "");
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState({ q: "", role: "", active: "" });
   const [busyId, setBusyId] = useState(null);
 
+  // {type: "reset" | "deactivate" | "activate", user}
+  const [confirmAction, setConfirmAction] = useState(null);
+  // {type: "reset" | "deactivate" | "activate", user}
+  const [resultModal, setResultModal] = useState(null);
+
   // Real-time search handler with typing delay effect
   useEffect(() => {
+    const q = search.trim();
+    if (q === filters.q) return;
     const timer = setTimeout(() => {
-      setFilters((f) => ({ ...f, q: search.trim() }));
+      setLoading(true);
+      setFilters((f) => ({ ...f, q }));
     }, 300);
     return () => clearTimeout(timer);
-  }, [search]);
+  }, [search, filters.q]);
 
   // Load users whenever filters change
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
     listUsers(filters)
       .then((data) => {
         if (!cancelled) {
@@ -114,7 +157,7 @@ export default function UserListPage({ lang, user: me }) {
         }
       })
       .catch((err) => {
-        if (!cancelled) setError(err.message || TEXT.en.loadError);
+        if (!cancelled) setError(getFormError(err, lang) || t.loadError);
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -122,7 +165,12 @@ export default function UserListPage({ lang, user: me }) {
     return () => {
       cancelled = true;
     };
-  }, [filters]);
+  }, [filters, lang, t.loadError]);
+
+  function updateFilters(patch) {
+    setLoading(true);
+    setFilters((f) => ({ ...f, ...patch }));
+  }
 
   function replaceUser(updated) {
     setUsers((list) =>
@@ -130,41 +178,35 @@ export default function UserListPage({ lang, user: me }) {
     );
   }
 
-  async function handleToggleActive(u) {
-    const next = !u.isActive;
-    const question = next ? t.confirmActivate : t.confirmDeactivate;
-    if (!window.confirm(`${question} ${userName(u, lang)}?`)) return;
+  async function executeConfirmedAction() {
+    if (!confirmAction) return;
+    const { type, user: targetUser } = confirmAction;
 
-    setBusyId(u.id);
+    setBusyId(targetUser.id);
     setError("");
-    setNotice("");
     try {
-      const data = await setUserActive(u.id, next);
-      replaceUser(data.user);
-      setNotice(next ? "activated" : "deactivated");
+      if (type === "reset") {
+        const data = await resetUserPassword(targetUser.id);
+        replaceUser(data.user);
+        setConfirmAction(null);
+        setResultModal({ type: "reset", user: data.user });
+      } else {
+        const nextActive = type === "activate";
+        const data = await setUserActive(targetUser.id, nextActive);
+        replaceUser(data.user);
+        setConfirmAction(null);
+        setResultModal({ type, user: data.user });
+      }
     } catch (err) {
-      setError(err.message);
+      setConfirmAction(null);
+      setError(getFormError(err, lang));
     } finally {
       setBusyId(null);
     }
   }
 
-  async function handleReset(u) {
-    if (!window.confirm(`${t.confirmReset} ${userName(u, lang)}?`)) return;
-
-    setBusyId(u.id);
-    setError("");
-    setNotice("");
-    try {
-      const data = await resetUserPassword(u.id);
-      replaceUser(data.user);
-      setNotice("reset");
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setBusyId(null);
-    }
-  }
+  const confirmText = confirmAction ? t.modal[confirmAction.type] : null;
+  const resultText = resultModal ? t.modal[resultModal.type] : null;
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -200,7 +242,7 @@ export default function UserListPage({ lang, user: me }) {
         </div>
         <select
           value={filters.role}
-          onChange={(e) => setFilters((f) => ({ ...f, role: e.target.value }))}
+          onChange={(e) => updateFilters({ role: e.target.value })}
           className={selectClass}
         >
           <option value="">{t.allRoles}</option>
@@ -212,9 +254,7 @@ export default function UserListPage({ lang, user: me }) {
         </select>
         <select
           value={filters.active}
-          onChange={(e) =>
-            setFilters((f) => ({ ...f, active: e.target.value }))
-          }
+          onChange={(e) => updateFilters({ active: e.target.value })}
           className={selectClass}
         >
           <option value="">{t.allStatus}</option>
@@ -223,13 +263,8 @@ export default function UserListPage({ lang, user: me }) {
         </select>
       </div>
 
-      {notice && t.notice[notice] && (
-        <div className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-sm rounded-xl px-4 py-3 mb-4">
-          {t.notice[notice]}
-        </div>
-      )}
       {error && (
-        <div className="bg-red-500/10 border border-b-red-500/30 text-red-300 text-sm rounded-xl px-4 py-3 mb-4">
+        <div className="bg-red-500/10 border border-red-500/30 text-red-300 text-sm rounded-xl px-4 py-3 mb-4">
           {error}
         </div>
       )}
@@ -314,7 +349,10 @@ export default function UserListPage({ lang, user: me }) {
                           {t.edit}
                         </Link>
                         <button
-                          onClick={() => handleReset(u)}
+                          type="button"
+                          onClick={() =>
+                            setConfirmAction({ type: "reset", user: u })
+                          }
                           disabled={busy}
                           className="px-3 py-1.5 rounded-lg text-xs text-slate-200 border border-slate-700 hover:border-amber-500/60 disabled:opacity-50 transition"
                         >
@@ -322,7 +360,13 @@ export default function UserListPage({ lang, user: me }) {
                         </button>
                         {!isSelf && (
                           <button
-                            onClick={() => handleToggleActive(u)}
+                            type="button"
+                            onClick={() =>
+                              setConfirmAction({
+                                type: u.isActive ? "deactivate" : "activate",
+                                user: u,
+                              })
+                            }
                             disabled={busy}
                             className={`px-3 py-1.5 rounded-lg text-xs border disabled:opacity-50 transition ${
                               u.isActive
@@ -342,6 +386,107 @@ export default function UserListPage({ lang, user: me }) {
           </tbody>
         </table>
       </div>
+
+      {/* Step 1: Confirm Action Modal (Reset Password / Deactivate / Activate) */}
+      {confirmAction && confirmText && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 backdrop-blur-sm px-4">
+          <div
+            className={`w-full max-w-md rounded-2xl bg-slate-900 border p-6 shadow-2xl ${
+              confirmAction.type === "deactivate"
+                ? "border-red-50/40"
+                : "bg-amber-500/20 text-amber-400"
+            }`}
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <div
+                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg font-bold ${
+                  confirmAction.type === "deactivate"
+                    ? "bg-red-50/20 text-red-400"
+                    : "bg-amber-500/20 text-amber-400"
+                }`}
+              >
+                !
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-slate-100">
+                  {confirmText.confirmTitle}
+                </h2>
+                <p className="text-xs text-slate-400 font-medium">
+                  {confirmAction.user.email}
+                </p>
+              </div>
+            </div>
+
+            <div className="rounded-xl bg-slate-950/70 border border-slate-800 p-4 mb-5 text-xs text-slate-200 leading-relaxed">
+              <p className="font-semibold text-amber-400 mb-1">
+                {userName(confirmAction.user, lang)}
+              </p>
+              <p>{confirmText.confirmDesc}</p>
+            </div>
+
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                disabled={busyId === confirmAction.user.id}
+                onClick={() => setConfirmAction(null)}
+                className="px-5 py-2.5 rounded-full text-xs font-semibold text-slate-300 border border-slate-700 hover:border-slate-500 disabled:opacity-50 transition"
+              >
+                {t.cancel}
+              </button>
+              <button
+                type="button"
+                disabled={busyId === confirmAction.user.id}
+                onClick={executeConfirmedAction}
+                className={`px-5 py-2.5 rounded-full text-xs font-bold transition disabled:opacity-50 ${
+                  confirmAction.type === "deactivate"
+                    ? "bg-red-500 hover:bg-red-400 text-slate-950"
+                    : "bg-linear-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950"
+                }`}
+              >
+                {busyId === confirmAction.user.id
+                  ? t.processing
+                  : confirmText.confirmBtn}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Step 2: Success Result Modal */}
+      {resultModal && resultText && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 backdrop-blur-sm px-4">
+          <div className="w-full max-w-md rounded-2xl bg-slate-900 border border-emerald-500/40 p-6 shadow-2xl">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 text-lg font-bold">
+                ✓
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-slate-100">
+                  {resultText.successTitle}
+                </h2>
+                <p className="text-xs text-emerald-400 font-medium">
+                  {resultModal.user.email}
+                </p>
+              </div>
+            </div>
+
+            <div className="rounded-xl bg-slate-950/70 border border-slate-800 p-4 mb-5 text-xs text-slate-200 leading-relaxed">
+              <p className="font-semibold text-amber-400 mb-1">
+                {userName(resultModal.user, lang)}
+              </p>
+              <p>{resultText.successDesc}</p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setResultModal(null)}
+              className="w-full py-2.5 rounded-full text-sm font-bold text-slate-950 bg-linear-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 transition"
+            >
+              {t.closeButton}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

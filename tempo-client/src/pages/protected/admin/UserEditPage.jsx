@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import UserForm from "../../../components/UserForm.jsx";
+import { getFormError } from "../../../lib/userErrors.js";
 import {
   getUserFormOptions,
   getUser,
@@ -14,12 +15,19 @@ const TEXT = {
     title: "แก้ไขข้อมูลผู้ใช้",
     save: "บันทึก",
     loading: "กำลังโหลด...",
+    successTitle: "บันทึกการแก้ไขข้อมูลสำเร็จ",
+    successMessage: "อัพเดทข้อมูลและสิทธิ์ของผู้ใช้งานเรียบร้อยแล้ว",
+    closeButton: "รับทราบ-กลับไปหน้าผู้ใช้งาน",
   },
   en: {
     back: "⬅️ Back to user",
     title: "Edit user",
     save: "Save changes",
     loading: "Loading...",
+    successTitle: "Changes saved successfully",
+    successMessage:
+      "The user's profile and branch access permissions have been updated",
+    closeButton: "Got it, back to the user list",
   },
 };
 
@@ -50,6 +58,7 @@ export default function UserEditPage({ lang, user: me }) {
   const [loadError, setLoadError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const [updatedUser, setUpdatedUser] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -59,22 +68,27 @@ export default function UserEditPage({ lang, user: me }) {
         setOptions(opts);
         setTarget(data.user);
       })
-      .catch((err) => !cancelled && setLoadError(err.message));
+      .catch((err) => !cancelled && setLoadError(getFormError(err, lang)));
     return () => {
       cancelled = true;
     };
-  }, [id]);
+  }, [id, lang]);
 
   async function handleSubmit(values) {
     setSubmitting(true);
     setSubmitError("");
     try {
-      await updateUser(id, values);
-      navigate("/admin/users", { state: { notice: "updated" } });
+      const data = await updateUser(id, values);
+      setUpdatedUser(data.user || { ...target, ...values });
     } catch (err) {
-      setSubmitError(err.message);
+      setSubmitError(getFormError(err, lang));
+    } finally {
       setSubmitting(false);
     }
+  }
+
+  function handleCloseSuccess() {
+    navigate("/admin/users");
   }
 
   // Active branches + any inactive branches this user is still linked to,
@@ -97,7 +111,7 @@ export default function UserEditPage({ lang, user: me }) {
       >
         {t.back}
       </Link>
-      <h1 className="text-2xl font-bold text-slate-100mt-3">{t.title}</h1>
+      <h1 className="text-2xl font-bold text-slate-100 mt-3">{t.title}</h1>
       {target && (
         <p className="text-sm text-slate-400 mt-1">{userName(target, lang)}</p>
       )}
@@ -123,6 +137,42 @@ export default function UserEditPage({ lang, user: me }) {
           onSubmit={handleSubmit}
           onCancel={() => navigate("/admin/users")}
         />
+      )}
+
+      {/* Confirmation modal */}
+      {updatedUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 backdrop-blur-sm px-4">
+          <div className="w-full max-w-md rounded-2xl bg-slate-900 border border-emerald-500/40 p-6 shadow-2xl">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex h-0 w-0 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 text-lg font-bold">
+                ✓
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-slate-100">
+                  {t.successTitle}
+                </h2>
+                <p className="text-xs text-emerald-400 font-medium">
+                  {updatedUser.email}
+                </p>
+              </div>
+            </div>
+
+            <div className="rounded-xl bg-slate-950/70 border border-slate-800 p-4 mb-5 text-xs text-slate-200 leading-relaxed">
+              <p className="font-semibold text-amber-400 mb-1">
+                {userName(updatedUser, lang)}
+              </p>
+              <p>{t.successMessage}</p>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleCloseSuccess}
+              className="w-full py-2.5 rounded-full text-sm font-bold text-slate-950 bg-linear-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 transition"
+            >
+              {t.closeButton}
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

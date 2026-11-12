@@ -31,7 +31,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const REQUIRED_FIELDS = ["email", "fullNameTh", "fullNameEn"];
 const OPTIONAL_TEXT_FIELDS = [
   "fullNameTh",
-  "fullNameEh",
+  "fullNameEn",
   "addressTh",
   "addressEn",
   "taxId",
@@ -41,10 +41,7 @@ const OPTIONAL_TEXT_FIELDS = [
 
 const SERVER_ERROR = { message: "Something went wrong, please try again." };
 
-const emailExistsResponse = {
-  code: "EMAIL_EXISTS",
-  message: "This email is already in use",
-};
+const emailExistsResponse = { code: "EMAIL_EXISTS" };
 
 // Treate empty string as "not provided"
 function clean(value) {
@@ -69,28 +66,25 @@ function readUserInput(body = {}, { partial = false } = {}) {
   for (const key of OPTIONAL_TEXT_FIELDS) {
     if (has(key)) data[key] = clean(body[key]);
   }
-  if (has("role")) data.role = clean(body.role) || partial ? null : "STAFF";
+  if (has("role")) data.role = clean(body.role) || (partial ? null : "STAFF");
 
   // Required fields: must be filled on create, can't be clear on edit
   if (REQUIRED_FIELDS.some((key) => has(key) && !data[key])) {
     return {
-      error: {
-        code: "MISSING_FIELDS",
-        message: "Email, Thai name and English name are required",
-      },
+      error: { code: "MISSING_FIELDS" },
     };
   }
   if (has("email") && !EMAIL_RE.test(data.email)) {
     return {
-      error: { code: "INVALID_EMAIL", message: "Email format is invalid" },
+      error: { code: "INVALID_EMAIL" },
     };
   }
   if (has("role") && !ALLOWED_ROLES.includes(data.role)) {
-    return { error: { code: "INVALID_ROLE", message: "Role is not allowed" } };
+    return { error: { code: "INVALID_ROLE" } };
   }
   if (data.taxId && !/^\d{13}$/.test(data.taxId)) {
     return {
-      error: { code: "INVALID_TAX_ID", message: "Tax ID must be 13 digits" },
+      error: { code: "INVALID_TAX_ID" },
     };
   }
 
@@ -100,7 +94,7 @@ function readUserInput(body = {}, { partial = false } = {}) {
     data.dateOfBirth = raw ? new Date(raw) : null;
     if (data.dateOfBirth && Number.isNaN(data.dateOfBirth.getTime())) {
       return {
-        error: { code: "INVALID_DATE", message: "Date of birth is invalid" },
+        error: { code: "INVALID_DATE" },
       };
     }
   }
@@ -115,10 +109,7 @@ function readBranchIds(body = {}) {
   const ids = body.branchIds;
   if (!Array.isArray(ids) || ids.some((id) => typeof id !== "string")) {
     return {
-      error: {
-        code: "INVALID_BRANCHES",
-        message: "branchIds must be a list of branch ids",
-      },
+      error: { code: "INVALID_BRANCHES" },
     };
   }
   return { branchIds: [...new Set(ids)] };
@@ -208,7 +199,7 @@ export async function listUsers(req, res) {
     res.json({ users });
   } catch (error) {
     console.error("List users error:", error);
-    res.status(500).json({ SERVER_ERROR });
+    res.status(500).json(SERVER_ERROR);
   }
 }
 
@@ -221,9 +212,7 @@ export async function getUser(req, res) {
       select: USER_SELECT,
     });
     if (!user) {
-      return res
-        .status(404)
-        .json({ code: "USER_NOT_FOUND", message: "User not found" });
+      return res.status(404).json({ code: "USER_NOT_FOUND" });
     }
 
     const branches = await getUserBranches(id);
@@ -236,6 +225,7 @@ export async function getUser(req, res) {
 
 // POST /api/admin/users
 export async function createUser(req, res) {
+  //console.log("BODY", req.body);
   try {
     const defaultPassword = process.env.DEFAULT_RESET_PASSWORD;
     if (!defaultPassword || defaultPassword.length < 8) {
@@ -259,10 +249,7 @@ export async function createUser(req, res) {
     if (existing) return res.status(409).json(emailExistsResponse);
 
     if (!(await branchesExists(branchIds))) {
-      return res.status(400).json({
-        code: "INVALID_BRANCHES",
-        message: "One or more branches do not exists",
-      });
+      return res.status(400).json({ code: "INVALID_BRANCHES" });
     }
 
     const passwordHash = await bcrypt.hash(defaultPassword, 10);
@@ -312,16 +299,12 @@ export async function updateUser(req, res) {
     const { branchIds } = branchInput;
 
     if (Object.keys(input.data).length === 0 && branchIds === undefined) {
-      return res
-        .status(400)
-        .json({ code: "NO_CHANGES", message: "Nothing to update" });
+      return res.status(400).json({ code: "NO_CHANGES" });
     }
 
     const targetUser = await prisma.user.findUnique({ where: { id } });
     if (!targetUser) {
-      return res
-        .status(404)
-        .json({ code: "USER_NOT_FOUND", message: "User not found" });
+      return res.status(404).json({ code: "USER_NOT_FOUND" });
     }
 
     // Prevent admin from changing their own role (could lock themselves out)
@@ -330,10 +313,7 @@ export async function updateUser(req, res) {
       input.data.role &&
       input.data.role !== targetUser.role
     ) {
-      return res.status(400).json({
-        code: "CANNOT_CHANGE_OWN_ROLE",
-        message: "You cannot change your own role",
-      });
+      return res.status(400).json({ code: "CANNOT_CHANGE_OWN_ROLE" });
     }
 
     // New email must not belong to someone else
@@ -345,10 +325,7 @@ export async function updateUser(req, res) {
     }
 
     if (!(await branchesExists(branchIds))) {
-      return res.status(400).json({
-        code: "INVALID_BRANCHES",
-        message: "One or more branches do not exist",
-      });
+      return res.status(400).json({ code: "INVALID_BRANCHES" });
     }
 
     const user = await prisma.$transaction(async (tx) => {
@@ -381,25 +358,17 @@ export async function setUserActive(req, res) {
     const { isActive } = req.body ?? {};
 
     if (typeof isActive !== "boolean") {
-      return res.status(400).json({
-        code: "INVALID_STATUS",
-        message: "isActive must be true or false",
-      });
+      return res.status(400).json({ code: "INVALID_STATUS" });
     }
 
     // Prevent admins from deactivate themselves
     if (id === req.user.id && isActive === false) {
-      return res.status(400).json({
-        code: "CANNOT_DEACTIVATE_SELF",
-        message: "You cannot deactivate your own account",
-      });
+      return res.status(400).json({ code: "CANNOT_DEACTIVATE_SELF" });
     }
 
     const targetUser = await prisma.user.findUnique({ where: { id } });
     if (!targetUser) {
-      return res
-        .status(404)
-        .json({ code: "USER_NOT_FOUND", message: "User not found" });
+      return res.status(404).json({ code: "USER_NOT_FOUND" });
     }
 
     const updatedUser = await prisma.user.update({
@@ -428,9 +397,7 @@ export async function resetUserPassword(req, res) {
     const { id } = req.params;
     const targetUser = await prisma.user.findUnique({ where: { id } });
     if (!targetUser) {
-      return res
-        .status(404)
-        .json({ code: "USER_NOT_FOUND", message: "User not found" });
+      return res.status(404).json({ code: "USER_NOT_FOUND" });
     }
 
     const passwordHash = await bcrypt.hash(defaultPassword, 10);

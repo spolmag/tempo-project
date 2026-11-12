@@ -51,7 +51,7 @@ const TEXT = {
       },
       branches: {
         title: "สาขา",
-        desc: "เพิ่ม, แก้ไขข้อมูลาขา",
+        desc: "เพิ่ม, แก้ไขข้อมูลสาขา",
       },
       classes: {
         title: "คลาสเรียน",
