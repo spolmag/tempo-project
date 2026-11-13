@@ -16,6 +16,15 @@ enum Role {
   CUSTOMER
 }
 
+enum Zonetype {
+  RECEPTION
+  SHOWROOM
+  STOCK_ROOM
+  CLASSROOM
+  OFFICE
+  OTHER
+}
+
 model User {
   id                  String      @id @default(uuid())
   email               String      @unique
@@ -46,6 +55,7 @@ model Branch {
   code                String      @unique
   nameTh              String
   nameEn              String
+  phone               String?
   addressTh           String?
   addressEn           String?
   taxId               String?
@@ -58,6 +68,7 @@ model Branch {
   updatedById         String
 
   userAccess          UserBranch[]
+  zones               Zone[]
 
   @@map("branches")
 }
@@ -74,4 +85,29 @@ model UserBranch {
   @@id([userId, branchId])
   @@index([branchId])
   @@map("user_branches")
+}
+
+model Zone {
+  id                  String  @id @default(uuid())
+  branchId            String
+  parentId            String?
+  code                String
+  nameTh              String
+  nameEn              String
+  type                Zonetype  @default(CLASSROOM)
+  maxCapacity         Int?
+  isActive            Boolean  @default(true)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  createdById         String
+  updatedById         String
+
+  branch              Branch  @relation(fields: [branchId], references: [id])
+  parent              Zone?   @relation("ZoneHierarchy", fields: [parentId], references: [id])
+  subZones            Zone[]  @relation("ZoneHierarchy)
+
+  @@unique([branchId, code])
+  @@index([branchId])
+  @@index([parentId])
+  @@map("zones")
 }

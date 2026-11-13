@@ -1,6 +1,5 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { login } from "../lib/auth.js";
-import { useNavigate } from "react-router-dom";
 
 export default function StaffLoginPage({ lang = "th", onLoginSuccess }) {
   const [email, setEmail] = useState("");
@@ -9,7 +8,6 @@ export default function StaffLoginPage({ lang = "th", onLoginSuccess }) {
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
   const [warning, setWarning] = useState("");
-  const navigate = useNavigate();
 
   const t = {
     th: {
@@ -55,6 +53,18 @@ export default function StaffLoginPage({ lang = "th", onLoginSuccess }) {
     },
   }[lang];
 
+  // Helper function for Login error
+  function getLoginError(err) {
+    if (err.code === "NETWORK_ERROR") return t.networkErrorMsg;
+    if (err.code === "ACCOUNT_DISABLED" || err.status === 403) {
+      return t.disabledMsg;
+    }
+    if (err.status === 401 || err.code === "INVALID_CREDENTIALS") {
+      return t.errorMsg;
+    }
+    return t.serverErrorMsg;
+  }
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
@@ -82,11 +92,13 @@ export default function StaffLoginPage({ lang = "th", onLoginSuccess }) {
         }, 1500);
       }
     } catch (err) {
-      setError(err.message || t.errorMsg);
+      setError(getLoginError(err));
     } finally {
       setLoading(false);
     }
   };
+
+  const isDone = Boolean(success || warning);
 
   return (
     <div className="min-h-[85vh] bg-slate-950 text-slate-100 flex items-center justify-center px-4 py-8">
@@ -109,7 +121,7 @@ export default function StaffLoginPage({ lang = "th", onLoginSuccess }) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder={t.placeholderEmail}
-              disabled={success}
+              disabled={loading || isDone}
               className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-amber-500 transition"
             />
           </div>
@@ -124,7 +136,7 @@ export default function StaffLoginPage({ lang = "th", onLoginSuccess }) {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder={t.placeholderPassword}
-              disabled={success}
+              disabled={loading || isDone}
               className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-amber-500 transition"
             />
           </div>
@@ -149,10 +161,10 @@ export default function StaffLoginPage({ lang = "th", onLoginSuccess }) {
 
           <button
             type="submit"
-            disabled={loading || success}
+            disabled={loading || isDone}
             className="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-3 px-4 rounded-xl transition shadow-lg shadow-amber-500/10"
           >
-            {loading && !success ? t.submittingBtn : t.submitBtn}
+            {loading && !isDone ? t.submittingBtn : t.submitBtn}
           </button>
         </form>
 

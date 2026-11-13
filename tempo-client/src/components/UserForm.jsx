@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { roleLabel, branchName } from "../lib/userLabels.js";
+import DateInput from "./DateInput.jsx";
+import { parseIsoDate } from "../lib/date.js";
 
 const EMPTY = {
   email: "",
@@ -26,6 +28,7 @@ const TEXT = {
     fullNameTh: "ชื่อ-นามสกุล (ไทย)",
     fullNameEn: "ชื่อ-นามสกุล (อังกฤษ)",
     dateOfBirth: "วันเกิด",
+    invalidDate: "กรุณาวัน เดือน และปีให้ถูกต้อง",
     taxId: "เลขประจำตัวผู้เสียภาษี",
     phone: "เบอร์โทรศัพท์",
     lineId: "LINE ID",
@@ -50,6 +53,7 @@ const TEXT = {
     fullNameTh: "Full name (Thai)",
     fullNameEn: "Full name (English)",
     dateOfBirth: "Date of birth",
+    invalidDate: "Please select a complete day, month, and year",
     taxId: "Tax ID",
     phone: "Phone",
     lineId: "LINE ID",
@@ -143,6 +147,10 @@ export default function UserForm({
       setFormError(t.taxIdInvalid);
       return;
     }
+    if (values.dateOfBirth && !parseIsoDate(values.dateOfBirth)) {
+      setFormError(t.invalidDate);
+      return;
+    }
 
     const { branchIds, ...fields } = values;
     // Admin get every branch, so their branch links are not changed
@@ -202,12 +210,10 @@ export default function UserForm({
             />
           </Field>
           <Field label={t.dateOfBirth}>
-            <input
-              type="date"
-              name="dateOfBirth"
+            <DateInput
+              lang={lang}
               value={values.dateOfBirth}
-              onChange={setField}
-              className={`${inputClass} scheme-dark`}
+              onChange={(val) => setValues((v) => ({ ...v, dateOfBirth: val }))}
             />
           </Field>
           <Field label={t.taxId}>

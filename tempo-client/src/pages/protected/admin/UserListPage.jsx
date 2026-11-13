@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, replace, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 import {
   listUsers,
   setUserActive,
@@ -40,7 +40,7 @@ const TEXT = {
         confirmTitle: "ยืนยันการรีเซ็ตรหัสผ่าน",
         confirmDesc:
           "ต้องการรีเซ็ตรหัสผ่านของผู้ใช้งานนี้เป็นรหัสผ่านเริ่มต้นหรือไม่ ผู้ใช้งานจะต้องเปลี่ยนรหัสผ่านในการเข้าระบบครั้งถัดไป",
-        confirmBtn: "ยืยยันรีเซ็ตรหัสผ่าน",
+        confirmBtn: "ยืนยันรีเซ็ตรหัสผ่าน",
         successTitle: "รีเซ็ตรหัสผ่านสำเร็จ",
         successDesc:
           "รหัสผ่านถูกรีเซ็ตเป็นรหัสเริ่มต้นแล้ว ผู้ใช้งานจะต้องเปลี่ยนรหัสผ่านเมื่อเข้าสู่ระบบครั้งถัดไป",
@@ -103,13 +103,13 @@ const TEXT = {
           "Are you sure you want to deactivate this user account? They will not be able to sign in until reactivated.",
         confirmBtn: "Deactivate account",
         successTitle: "Account deactivated",
-        successDesc: "The user account has been deactivate",
+        successDesc: "The user account has been deactivated",
       },
       activate: {
         confirmTitle: "Confirm account activation",
         confirmDesc:
           "Are you sure you want to activate this user account so they can sign in again.",
-        confirmBtn: "Activation account",
+        confirmBtn: "Activate account",
         successTitle: "Account activated",
         successDesc: "The user account has been activated",
       },
@@ -393,15 +393,15 @@ export default function UserListPage({ lang, user: me }) {
           <div
             className={`w-full max-w-md rounded-2xl bg-slate-900 border p-6 shadow-2xl ${
               confirmAction.type === "deactivate"
-                ? "border-red-50/40"
-                : "bg-amber-500/20 text-amber-400"
+                ? "border-red-500/40"
+                : "border-amber-500/40"
             }`}
           >
             <div className="flex items-center gap-3 mb-4">
               <div
                 className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg font-bold ${
                   confirmAction.type === "deactivate"
-                    ? "bg-red-50/20 text-red-400"
+                    ? "bg-red-500/20 text-red-400"
                     : "bg-amber-500/20 text-amber-400"
                 }`}
               >

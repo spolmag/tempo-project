@@ -28,9 +28,10 @@ export async function login(req, res) {
 
     // 1.Check if there's email and password inside request body
     if (!email || !password) {
-      return res
-        .status(400)
-        .json({ message: "Please enter email and password" });
+      return res.status(400).json({
+        code: "MISSING_FIELDS",
+        message: "Please enter email and password",
+      });
     }
 
     // 2. Find the user and check the password
@@ -38,21 +39,30 @@ export async function login(req, res) {
     const passwordOK =
       user && (await bcrypt.compare(password, user.passwordHash));
     if (!passwordOK) {
-      return res.status(401).json({ message: "Invalid email or password." });
+      return res.status(401).json({
+        code: "INVALID_CREDENTIALS",
+        message: "Invalid email or password.",
+      });
     }
 
     // Only staff & admin role can use the staff portal
     //    Same message as a wrong password, so nobody can find out
     //    which accounts exist or what role they have.
     if (!STAFF_ROLES.includes(user.role)) {
-      return res.status(401).json({ message: "Invalid email or password." });
+      return res.status(401).json({
+        code: "INVALID_CREDENTIALS",
+        message: "Invalid email or password.",
+      });
     }
 
     // 4. Block inactive account
     if (!user.isActive) {
       return res
         .status(403)
-        .json({ message: "This account has been disabled." });
+        .json({
+          code: "ACCOUNT_DISABLED",
+          message: "This account has been disabled.",
+        });
     }
 
     // Branches this user can work in (may be empty)

@@ -36,12 +36,12 @@ export function userName(user, lang) {
 }
 
 // Branch name in the selected language, falling back to the other language, then code
-export function branchName(branch, lang) {
+export function branchName(branch, lang = "th") {
   if (!branch) return "";
   return (
     (lang === "th" ? branch.nameTh : branch.nameEn) ||
-    branch.nameEn ||
     branch.nameTh ||
-    branch.code
+    branch.nameEn ||
+    ""
   );
 }

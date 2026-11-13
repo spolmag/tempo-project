@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { changePassword } from "../lib/auth.js";
 
 const MIN_LENGTH = 8; //Keep in sync with the backend rule
@@ -22,6 +22,8 @@ export default function ChangePasswordPage({
       badge: "บัญชีของฉัน",
       title: "เปลี่ยนรหัสผ่าน",
       subTitle: "กรุณากรอกรหัสผ่านปัจจุบันและรหัสผ่านใหม่",
+      forcedSubtitle:
+        "เพื่อความปลอดภัย กรุณาเปลี่ยนรหัสผ่านจากรหัสเริ่มต้นเป็นรหัสผ่านส่วนตัวก่อนเข้าใช้งานระบบ",
       currentLabel: "รหัสผ่านปัจจุบัน",
       newLabel: "รหัสผ่านใหม่",
       confirmLabel: "ยืนยันรหัสผ่านใหม่",
@@ -35,6 +37,8 @@ export default function ChangePasswordPage({
       weakError: `รหัสผ่านใหม่ต้องมีอย่างน้อย ${MIN_LENGTH} ตัวอักษร`,
       mismatchError: "รหัสผ่านใหม่และการยืนยันไม่ตรงกัน",
       sameError: "รหัสผ่านใหม่ต้องไม่ซ้ำกับรหัสปัจจุบัน",
+      defaultPasswordError:
+        "ไม่สามารถใช้รหัสผ่านเริ่มต้นของระบบเป็นรหัสผ่านใหม่ได้",
       wrongCurrentError: "รหัสผ่านปัจจุบันไม่ถูกต้อง",
       sessionExpireError: "เซสชั่นหมดอายุ กรุณาเข้าสู่ระบบอีกครั้ง",
       serverErrorMsg: "ระบบขัดข้อง กรุณาลองใหม่อีกครั้ง",
@@ -46,6 +50,8 @@ export default function ChangePasswordPage({
       badge: "MY ACCOUNT",
       title: "Change Password",
       subTitle: "Enter your current password and new password.",
+      forcedSubtitle:
+        "ํFor security, please change password from default password before accessing the esystem.",
       currentLabel: "Current Password",
       newLabel: "New Password",
       confirmLabel: "Confirm New Password",
@@ -60,6 +66,8 @@ export default function ChangePasswordPage({
       weakError: `New password must be at least ${MIN_LENGTH} characters.`,
       mismatchError: "New password and confirmation do not match.",
       sameError: "New password must be different from the current password.",
+      defaultPasswordError:
+        "ํYou cannot use the system default password. Please choose a different password",
       wrongCurrentError: "Current password is incorrect.",
       sessionExpireError: "Your session has expired. Please sign in again.",
       serverErrorMsg: "Something went wrong. Please try again.",
@@ -106,6 +114,8 @@ export default function ChangePasswordPage({
         return t.sameError;
       case "MISSING_FIELDS":
         return t.requiredError;
+      case "DEFAULT_PASSWORD":
+        return t.defaultPasswordError;
       default:
         return t.serverErrorMsg; // 500 or server can't br reached
     }
@@ -161,7 +171,13 @@ export default function ChangePasswordPage({
             {t.badge}
           </span>
           <h2 className="text-2xl font-bold tracking-wider mb-2">{t.title}</h2>
-          <p className="text-slate-400 text-sm">{t.subTitle}</p>
+          <p
+            className={`text-sm ${
+              forced ? "text-amber-400 font-medium" : "text-slate-400"
+            }`}
+          >
+            {forced ? t.forcedSubtitle : t.subTitle}
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} noValidate className="space-y-5">
