@@ -18,6 +18,8 @@ import DashboardPage from "./pages/protected/DashboardPage.jsx";
 import UserListPage from "./pages/protected/admin/UserListPage.jsx";
 import UserCreatePage from "./pages/protected/admin/UserCreatePage.jsx";
 import UserEditPage from "./pages/protected/admin/UserEditPage.jsx";
+import BranchListPage from "./pages/protected/admin/BranchListPage.jsx";
+import BranchCreatePage from "./pages/protected/admin/BranchCreatePage.jsx";
 import StaffLoginPage from "./components/StaffLoginPage.jsx";
 import ChangePasswordPage from "./components/ChangePasswordPage.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
@@ -206,6 +208,14 @@ export default function App() {
             <Route
               path="/admin/users/:id/edit"
               element={<UserEditPage lang={lang} user={user} />}
+            />
+            <Route
+              path="/admin/branches"
+              element={<BranchListPage lang={lang} />}
+            />
+            <Route
+              path="/admin/branches/new"
+              element={<BranchCreatePage lang={lang} />}
             />
           </Route>
 

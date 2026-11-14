@@ -18,6 +18,6 @@ router.post("/", createBranch);
 
 router.get("/:id", getBranch);
 router.patch("/:id", updateBranch);
-router.patch("/:id", setBranchActive);
+router.patch("/:id/status", setBranchActive);
 
 export default router;

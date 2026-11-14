@@ -16,7 +16,7 @@ enum Role {
   CUSTOMER
 }
 
-enum Zonetype {
+enum ZoneType {
   RECEPTION
   SHOWROOM
   STOCK_ROOM
@@ -94,7 +94,7 @@ model Zone {
   code                String
   nameTh              String
   nameEn              String
-  type                Zonetype  @default(CLASSROOM)
+  type                ZoneType  @default(CLASSROOM)
   maxCapacity         Int?
   isActive            Boolean  @default(true)
   createdAt           DateTime  @default(now())
@@ -104,7 +104,7 @@ model Zone {
 
   branch              Branch  @relation(fields: [branchId], references: [id])
   parent              Zone?   @relation("ZoneHierarchy", fields: [parentId], references: [id])
-  subZones            Zone[]  @relation("ZoneHierarchy)
+  subZones            Zone[]  @relation("ZoneHierarchy")
 
   @@unique([branchId, code])
   @@index([branchId])

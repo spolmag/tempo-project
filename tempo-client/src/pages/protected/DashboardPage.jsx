@@ -22,7 +22,7 @@ const CARDS = [
     icon: "🏫",
     to: "/admin/branches",
     roles: ["ADMIN"],
-    ready: false,
+    ready: true,
   },
   {
     key: "classes",
