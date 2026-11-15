@@ -50,7 +50,7 @@ const TEXT = {
         desc: "ลงทะเบียนนักเรียนใหม่ จัดการข้อมูลนักเรียน-ผู้ปกครอง",
       },
       branches: {
-        title: "สาขา",
+        title: "สาขา-ห้องเรียน-โซน",
         desc: "เพิ่ม, แก้ไขข้อมูลสาขา",
       },
       classes: {
@@ -75,7 +75,7 @@ const TEXT = {
         desc: "Register new students and manage student and parent details for your branch.",
       },
       branches: {
-        title: "Branches",
+        title: "Branches-Classrooms-Zones",
         desc: "Add and edit branches, and turn branches on or off.",
       },
       classes: {

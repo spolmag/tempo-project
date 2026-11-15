@@ -20,6 +20,7 @@ import UserCreatePage from "./pages/protected/admin/UserCreatePage.jsx";
 import UserEditPage from "./pages/protected/admin/UserEditPage.jsx";
 import BranchListPage from "./pages/protected/admin/BranchListPage.jsx";
 import BranchCreatePage from "./pages/protected/admin/BranchCreatePage.jsx";
+import BranchEditPage from "./pages/protected/admin/BranchEditPage.jsx";
 import StaffLoginPage from "./components/StaffLoginPage.jsx";
 import ChangePasswordPage from "./components/ChangePasswordPage.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
@@ -216,6 +217,10 @@ export default function App() {
             <Route
               path="/admin/branches/new"
               element={<BranchCreatePage lang={lang} />}
+            />
+            <Route
+              path="/admin/branches/:id/edit"
+              element={<BranchEditPage lang={lang} />}
             />
           </Route>
 
