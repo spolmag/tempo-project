@@ -6,6 +6,7 @@ import {
 } from "../../../services/adminBranches.js";
 import { branchName } from "../../../lib/userLabels.js";
 import { getBranchError } from "../../../lib/branchErrors.js";
+import ActionModal from "../../../components/ActionModal.jsx";
 
 const TEXT = {
   th: {
@@ -328,105 +329,32 @@ export default function BranchListPage({ lang }) {
       </div>
 
       {/* Step 1: Confirm Action Modal */}
-      {confirmAction && confirmText && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 backdrop-blur-sm px-4">
-          <div
-            className={`w-full max-w-md rounded-2xl bg-slate-900 border p-6 shadow-2xl ${
-              confirmAction.type === "deactivate"
-                ? "border-red-500/40"
-                : "border-amber-500/40"
-            }`}
-          >
-            <div className="flex items-center gap-3 mb-4">
-              <div
-                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg font-bold ${
-                  confirmAction.type === "deactivate"
-                    ? "bg-red-500/20 text-red-400"
-                    : "bg-amber-500/20 text-amber-400"
-                }`}
-              >
-                !
-              </div>
-              <div>
-                <h2 className="text-lg font-bold text-slate-100">
-                  {confirmText.confirmTitle}
-                </h2>
-                <p className="text-xs text-slate-400 font-medium">
-                  {confirmAction.branch.code}
-                </p>
-              </div>
-            </div>
-
-            <div className="rounded-xl bg-slate-950/70 border border-slate-800 p-4 mb-5 text-xs text-slate-200 leading-relaxed">
-              <p className="font-semibold text-amber-400 mb-1">
-                {branchName(confirmAction.branch, lang)}
-              </p>
-              <p>{confirmText.confirmDesc}</p>
-            </div>
-
-            <div className="flex justify-end gap-3">
-              <button
-                type="button"
-                disabled={busyId === confirmAction.branch.id}
-                onClick={() => setConfirmAction(null)}
-                className="px-5 py-2.5 rounded-full text-xs font-semibold text-slate-300 border border-slate-700 hover:border-slate-500 disabled:opacity-50 transition"
-              >
-                {t.cancel}
-              </button>
-              <button
-                type="button"
-                disabled={busyId === confirmAction.branch.id}
-                onClick={executeConfirmedAction}
-                className={`px-5 py-2.5 rounded-full text-xs font-bold transition disabled:opacity-50 ${
-                  confirmAction.type === "deactivate"
-                    ? "bg-red-500 hover:bg-red-400 text-slate-950"
-                    : "bg-linear-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950"
-                }`}
-              >
-                {busyId === confirmAction.branch.id
-                  ? t.processing
-                  : confirmText.confirmBtn}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ActionModal
+        open={Boolean(confirmAction && confirmText)}
+        variant={confirmAction?.type === "deactivate" ? "danger" : "warning"}
+        title={confirmText?.confirmTitle}
+        badge={confirmAction?.branch.code}
+        heading={branchName(confirmAction?.branch, lang)}
+        message={confirmText?.confirmDesc}
+        cancelLabel={t.cancel}
+        confirmLabel={confirmText?.confirmBtn}
+        busy={busyId === confirmAction?.branch.id}
+        busyLabel={t.processing}
+        onCancel={() => setConfirmAction(null)}
+        onConfirm={executeConfirmedAction}
+      />
 
       {/* Step 2: Success Result Modal */}
-      {resultModal && resultText && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 backdrop-blur-sm px-4">
-          <div className="w-full max-w-md rounded-2xl bg-slate-900 border border-emerald-500/40 p-6 shadow-2xl">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 text-lg font-bold">
-                ✓
-              </div>
-              <div>
-                <h2 className="text-lg font-bold text-slate-100">
-                  {resultText.successTitle}
-                </h2>
-                <p className="text-xs text-emerald-400 font-medium">
-                  {resultModal.branch.code}
-                </p>
-              </div>
-            </div>
-
-            <div className="rounded-xl bg-slate-950/70 border border-slate-800 p-4 mb-5 text-xs text-slate-200 leading-relaxed">
-              <p className="font-semibold text-amber-400 mb-1">
-                {branchName(resultModal.branch, lang)}
-              </p>
-              <p>{resultText.successDesc}</p>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setResultModal(null)}
-              className="w-full py-2.5 rounded-full text-sm font-bold text-slate-950 bg-linear-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 transition"
-            >
-              {t.closeButton}
-            </button>
-          </div>
-        </div>
-      )}
+      <ActionModal
+        open={Boolean(resultModal && resultText)}
+        variant="success"
+        title={resultText?.successTitle}
+        badge={resultModal?.branch.code}
+        heading={branchName(resultModal?.branch, lang)}
+        message={resultText?.successDesc}
+        confirmLabel={t.closeButton}
+        onConfirm={() => setResultModal(null)}
+      />
     </div>
   );
 }

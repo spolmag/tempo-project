@@ -7,6 +7,7 @@ import {
   getUserFormOptions,
   createUser,
 } from "../../../services/adminUsers.js";
+import ActionModal from "../../../components/ActionModal.jsx";
 
 const TEXT = {
   th: {
@@ -101,40 +102,23 @@ export default function UserCreatePage({ lang }) {
       )}
 
       {/* Confirmation Modal Box */}
-      {createdUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 backdrop-blur-sm px-4">
-          <div className="w-full max-w-md rounded-2xl bg-slate-900 border border-emerald-500/40 p-6 shadow-2xl">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 text-lg font-bold">
-                ✓
-              </div>
-              <div>
-                <h2 className="text-lg font-bold text-slate-100">
-                  {t.successTitle}
-                </h2>
-                <p className="text-xs text-emerald-400 font-medium">
-                  {createdUser.email}
-                </p>
-              </div>
-            </div>
-
-            <div className="rounded-xl bg-slate-950/70 border border-slate-800 p-4 mb-5 text-xs text-slate-200 leading-relaxed">
-              <p className="font-semibold text-amber-400 mb-1">
-                {userName(createdUser, lang)}
-              </p>
-              <p>{t.successMessage}</p>
-            </div>
-
-            <button
-              type="button"
-              onClick={handleCloseSuccess}
-              className="w-full py-2.5 rounded-full text-sm font-bold text-slate-950 bg-linear-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 transition"
-            >
-              {t.closeButton}
-            </button>
-          </div>
-        </div>
-      )}
+      <ActionModal
+        open={Boolean(createdUser)}
+        variant="success"
+        title={t.successTitle}
+        badge={createdUser?.email}
+        heading={userName(createdUser, lang)}
+        confirmLabel={t.closeButton}
+        onConfirm={handleCloseSuccess}
+      >
+        <p>
+          {t.successMessagePrefix}{" "}
+          <span className="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-mono font-bold">
+            1234
+          </span>{" "}
+          {t.successMessageSuffix}
+        </p>
+      </ActionModal>
     </div>
   );
 }
