@@ -7,6 +7,10 @@ import {
   updateBranch,
   setBranchActive,
 } from "../controllers/adminBranchController.js";
+import {
+  listBranchZones,
+  createZone,
+} from "../controllers/adminZoneController.js";
 
 const router = Router();
 
@@ -14,10 +18,13 @@ const router = Router();
 router.use(requireAuth, requireRole("ADMIN"));
 
 router.get("/", listBranches);
-router.post("/", createBranch);
-
 router.get("/:id", getBranch);
+router.post("/", createBranch);
 router.patch("/:id", updateBranch);
 router.patch("/:id/status", setBranchActive);
+
+// Branch zones
+router.get("/:branchId/zones", listBranchZones);
+router.post("/:branchId/zones", createZone);
 
 export default router;

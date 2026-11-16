@@ -110,15 +110,7 @@ export default function UserCreatePage({ lang }) {
         heading={userName(createdUser, lang)}
         confirmLabel={t.closeButton}
         onConfirm={handleCloseSuccess}
-      >
-        <p>
-          {t.successMessagePrefix}{" "}
-          <span className="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-mono font-bold">
-            1234
-          </span>{" "}
-          {t.successMessageSuffix}
-        </p>
-      </ActionModal>
+      />
     </div>
   );
 }

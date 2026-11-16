@@ -4,6 +4,7 @@ import cors from "cors";
 import authRoutes from "./routes/authRoutes.js";
 import adminUserRoutes from "./routes/adminUsersRoutes.js";
 import adminBranchesRoutes from "./routes/adminBranchesRoutes.js";
+import adminZonesRoutes from "./routes/adminZonesRoutes.js";
 
 const app = express();
 
@@ -23,6 +24,7 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/admin/users", adminUserRoutes);
 app.use("/api/admin/branches", adminBranchesRoutes);
+app.use("/api/admin/zones", adminZonesRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

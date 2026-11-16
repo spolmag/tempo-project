@@ -391,7 +391,7 @@ export default function UserListPage({ lang, user: me }) {
       {/* Step 1: Confirm Action Modal (Reset Password / Deactivate / Activate) */}
       <ActionModal
         open={Boolean(confirmAction && confirmText)}
-        variant={confirmAction.type === "deactivate" ? "danger" : "warning"}
+        variant={confirmAction?.type === "deactivate" ? "danger" : "warning"}
         title={confirmText?.confirmTitle}
         badge={confirmAction?.user.email}
         heading={userName(confirmAction?.user, lang)}
