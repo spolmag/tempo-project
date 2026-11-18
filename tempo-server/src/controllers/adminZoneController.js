@@ -24,6 +24,7 @@ const ZONE_SELECT = {
   code: true,
   nameTh: true,
   nameEn: true,
+  description: true,
   type: true,
   maxCapacity: true,
   isActive: true,
@@ -49,7 +50,7 @@ const SERVER_ERROR = {
   message: "Something went wrong, please try again",
 };
 
-const TEXT_FIELDS = ["code", "nameTh", "nameEn", "parentId"];
+const TEXT_FIELDS = ["code", "nameTh", "nameEn", "description", "parentId"];
 
 function clean(value) {
   if (typeof value !== "string") return null;
@@ -138,7 +139,7 @@ function readZoneInput(body, { partial = false } = {}) {
   return { data };
 }
 
-// Verify parentId belongs to the same branch and is a top-level main zone
+// Verify parentId belongs to the same branch and does not create a circular loop
 async function validateParentZone(branchId, parentId, currentZoneId = null) {
   if (!parentId) return null;
 
@@ -161,11 +162,22 @@ async function validateParentZone(branchId, parentId, currentZoneId = null) {
     };
   }
 
-  if (parent.parentId !== null) {
-    return {
-      code: "NESTED_SUBZONE_NOT_ALLOWED",
-      message: "A subzone cannot have another subzone as it parent",
-    };
+  // Walk up the ancestor chain to prevent circular loops (A -> B -> C -> A)
+  if (currentZoneId) {
+    let cursorId = parent.parentId;
+    while (cursorId) {
+      if (cursorId === currentZoneId) {
+        return {
+          code: "CIRCULAR_PARENT",
+          message: "Cannot set a descendant subzone as the parent zone",
+        };
+      }
+      const ancester = await prisma.zone.findUnique({
+        where: { id: cursorId },
+        select: { parentId: true },
+      });
+      cursorId = ancester?.parentId ?? null;
+    }
   }
 
   return null;
@@ -235,11 +247,10 @@ export async function getZone(req, res) {
     const mainZones = await prisma.zone.findMany({
       where: {
         branchId: zone.branchId,
-        parentId: null,
-        id: { not: zone.id },
       },
       select: {
         id: true,
+        parentId: true,
         code: true,
         nameTh: true,
         nameEn: true,

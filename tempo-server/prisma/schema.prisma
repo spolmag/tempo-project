@@ -94,6 +94,7 @@ model Zone {
   code                String
   nameTh              String
   nameEn              String
+  description         String?
   type                ZoneType  @default(CLASSROOM)
   maxCapacity         Int?
   isActive            Boolean  @default(true)

@@ -24,6 +24,9 @@ import BranchEditPage from "./pages/protected/admin/BranchEditPage.jsx";
 import StaffLoginPage from "./components/StaffLoginPage.jsx";
 import ChangePasswordPage from "./components/ChangePasswordPage.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import ZoneListPage from "./pages/protected/admin/ZoneListPage.jsx";
+import ZoneCreatePage from "./pages/protected/admin/ZoneCreatePage.jsx";
+import ZoneEditPage from "./pages/protected/admin/ZoneEditPage.jsx";
 
 // Temporary pages until the real ones are built
 function PlaceholderPage({ title, text }) {
@@ -221,6 +224,18 @@ export default function App() {
             <Route
               path="/admin/branches/:id/edit"
               element={<BranchEditPage lang={lang} />}
+            />
+            <Route
+              path="/admin/branches/:branchId/zones"
+              element={<ZoneListPage lang={lang} />}
+            />
+            <Route
+              path="/admin/branches/:branchId/zones/new"
+              element={<ZoneCreatePage lang={lang} />}
+            />
+            <Route
+              path="/admin/branches/:branchId/zones/:zoneId/edit"
+              element={<ZoneEditPage lang={lang} />}
             />
           </Route>
 

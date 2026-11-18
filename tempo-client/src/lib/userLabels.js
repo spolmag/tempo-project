@@ -20,6 +20,15 @@ export const ROLE_LABELS = {
   },
 };
 
+export const ZONE_TYPE_LABELS = {
+  RECEPTION: { th: "ประชาสัมพันธ์", en: "Reception" },
+  SHOWROOM: { th: "โชว์รูม", en: "Showroom" },
+  STOCK_ROOM: { th: "ห้องสต็อกสินค้า", en: "Stock room" },
+  CLASSROOM: { th: "ห้องเรียน", en: "Classroom" },
+  OFFICE: { th: "ออฟฟิส", en: "Office" },
+  OTHER: { th: "อื่นๆ", en: "Other" },
+};
+
 export function roleLabel(role, lang) {
   return ROLE_LABELS[lang]?.[role] ?? role;
 }
@@ -44,4 +53,13 @@ export function branchName(branch, lang = "th") {
     branch.nameEn ||
     ""
   );
+}
+
+export function zoneTypeLabel(type, lang = "th") {
+  return ZONE_TYPE_LABELS[type]?.[lang] ?? type;
+}
+
+export function zoneName(zone, lang = "th") {
+  if (!zone) return "-";
+  return lang === "th" ? zone.nameTh : zone.nameEn;
 }
