@@ -13,6 +13,10 @@ const ERROR_TEXT = {
     INVALID_STATUS: "สถานะไม่ถูกต้อง",
     CANNOT_DEACTIVATE_SELF: "ท่านไม่สามารถเปลี่ยนสถานะบัญชีตัวเองได้",
     NETWORK_ERROR: "ไม่สามารถการเชื่อมต่อกับเซิร์ฟเวอร์",
+    INVALID_TEACHER_TYPE: "ประเภทครูไม่ถูกต้อง",
+    MISSING_TEACHER_TYPE:
+      "กรุณาระบุประเภทครู (ประจำ-Full-time / พาร์ทไทม์ - Part-time)",
+    INVALID_SALARY: "เงินเดือน ต้องเป็นตัวเลขจำนวนเต็ม ตั้งแต่ 0 ขึ้นไป",
     DEFAULT: "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",
   },
   en: {
@@ -29,6 +33,10 @@ const ERROR_TEXT = {
     INVALID_STATUS: "Status is invalid",
     CANNOT_DEACTIVATE_SELF: "You cannot deactivate yourself",
     NETWORK_ERROR: "Cannot connect to the server",
+    INVALID_TEACHER_TYPE: "Invalid teacher type",
+    MISSING_TEACHER_TYPE:
+      "Please select a teacher type (Full-time or Part-time)",
+    INVALID_SALARY: "Monthly salary must be a whole number of 0 or more",
     DEFAULT: "An error occurred. Please try again.",
   },
 };

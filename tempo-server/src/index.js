@@ -5,6 +5,7 @@ import authRoutes from "./routes/authRoutes.js";
 import adminUserRoutes from "./routes/adminUsersRoutes.js";
 import adminBranchesRoutes from "./routes/adminBranchesRoutes.js";
 import adminZonesRoutes from "./routes/adminZonesRoutes.js";
+import adminCoursesRoutes from "./routes/adminCoursesRoutes.js";
 
 const app = express();
 
@@ -25,6 +26,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/admin/users", adminUserRoutes);
 app.use("/api/admin/branches", adminBranchesRoutes);
 app.use("/api/admin/zones", adminZonesRoutes);
+app.use("/api/admin/courses", adminCoursesRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

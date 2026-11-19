@@ -20,6 +20,17 @@ export const ROLE_LABELS = {
   },
 };
 
+export const TEACHER_TYPE_LABELS = {
+  th: {
+    FULL_TIME: "ครูประจำ (Full-time)",
+    PART_TIME: "ครูพาร์ทไทม์ (Part-time)",
+  },
+  en: {
+    FULL_TIME: "Full-time teacher",
+    PART_TIME: "Part-time teacher",
+  },
+};
+
 export const ZONE_TYPE_LABELS = {
   RECEPTION: { th: "ประชาสัมพันธ์", en: "Reception" },
   SHOWROOM: { th: "โชว์รูม", en: "Showroom" },
@@ -42,6 +53,10 @@ export function userName(user, lang) {
     user.fullNameTh ||
     user.email
   );
+}
+
+export function teacherTypeLabel(type, lang = "th") {
+  return TEACHER_TYPE_LABELS[lang]?.[type] ?? type;
 }
 
 // Branch name in the selected language, falling back to the other language, then code

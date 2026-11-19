@@ -1,3 +1,14 @@
+// Compare two tree items: highlighted first, then sortOrder (default 999), then code
+function compareNodes(a, b) {
+  if (Boolean(a.isHilighted) !== Boolean(b.isHilighted)) {
+    return a.isHilighted ? -1 : 1;
+  }
+  const orderA = a.sortOrder ?? 999;
+  const orderB = b.sortOrder ?? 999;
+  if (orderA !== orderB) return orderA - orderB;
+  return (a.code || "").localeCompare(b.code || "");
+}
+
 // Flatten a list of {id, parentId} items into tree order witk `depth` (0, 1, 2, ...)
 export function buildTreeList(items = []) {
   const byId = new Map(items.map((item) => [item.id, item]));
@@ -12,6 +23,11 @@ export function buildTreeList(items = []) {
     } else {
       roots.push(item);
     }
+  }
+
+  roots.sort(compareNodes);
+  for (const list of childrenMap.values()) {
+    list.sort(compareNodes);
   }
 
   const result = [];

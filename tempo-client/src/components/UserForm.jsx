@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { roleLabel, branchName } from "../lib/userLabels.js";
+import { roleLabel, teacherTypeLabel, branchName } from "../lib/userLabels.js";
 import DateInput from "./DateInput.jsx";
 import { parseIsoDate } from "../lib/date.js";
 
@@ -8,6 +8,9 @@ const EMPTY = {
   fullNameTh: "",
   fullNameEn: "",
   role: "STAFF",
+  teacherType: "FULL_TIME",
+  teacherGrade: "",
+  monthlySalary: "",
   phone: "",
   lineId: "",
   taxId: "",
@@ -27,6 +30,12 @@ const TEXT = {
     role: "ตำแหน่ง",
     fullNameTh: "ชื่อ-นามสกุล (ไทย)",
     fullNameEn: "ชื่อ-นามสกุล (อังกฤษ)",
+    teacherType: "ประเภทครู",
+    teacherGrade: "ระดับ / เกรดครู",
+    teacherGradePlaceholder:
+      "ต.ย. Grade A, Senior, Yamaha G5 (ไม่บังคับต้องระบุ)",
+    monthlySalary: "เงินเดือนประจำ (บาท/เดือน)",
+    monthlySalaryHint: "เว้นว่างในกรณีไม่มีเงินเดือนประจำ",
     dateOfBirth: "วันเกิด",
     invalidDate: "กรุณาวัน เดือน และปีให้ถูกต้อง",
     taxId: "เลขประจำตัวผู้เสียภาษี",
@@ -52,6 +61,11 @@ const TEXT = {
     role: "Role",
     fullNameTh: "Full name (Thai)",
     fullNameEn: "Full name (English)",
+    teacherType: "Teacher type",
+    teacherGrade: "Teacher grade / level",
+    teacherGradePlaceholder: "e.g. Grade A, Senior, Yamaha G5 (optional)",
+    monthlySalary: "Monthly salary (THB)",
+    monthlySalaryHint: "Leave blank if no fixed monthly salary",
     dateOfBirth: "Date of birth",
     invalidDate: "Please select a complete day, month, and year",
     taxId: "Tax ID",
@@ -105,6 +119,7 @@ export default function UserForm({
   lang,
   initialValues,
   roles = [],
+  teacherTypes = ["FULL_TIME", "PART_TIME"],
   branches = [],
   isSelf = false,
   submitting = false,
@@ -152,9 +167,21 @@ export default function UserForm({
       return;
     }
 
+    const isTeacher = values.role === "TEACHER";
+    const isPartTimeTeacher = isTeacher && values.teacherType === "PART_TIME";
+
     const { branchIds, ...fields } = values;
+    const payload = {
+      ...fields,
+      teacherType: isTeacher ? values.teacherType : null,
+      teacherGrade: isTeacher ? values.teacherGrade : null,
+      monthlySalary:
+        !isPartTimeTeacher && values.monthlySalary !== ""
+          ? Number(values.monthlySalary)
+          : null,
+    };
     // Admin get every branch, so their branch links are not changed
-    onSubmit(values.role === "ADMIN" ? fields : { ...fields, branchIds });
+    onSubmit(values.role === "ADMIN" ? payload : { ...payload, branchIds });
   }
 
   const showError = formError || error;
@@ -188,6 +215,50 @@ export default function UserForm({
               ))}
             </select>
           </Field>
+
+          {values.role === "TEACHER" && (
+            <>
+              <Field label={t.teacherType} required>
+                <select
+                  name="teacherType"
+                  value={values.teacherType}
+                  onChange={setField}
+                  className={inputClass}
+                >
+                  {teacherTypes.map((tt) => (
+                    <option key={tt} value={tt}>
+                      {teacherTypeLabel(tt, lang)}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+              <Field label={t.teacherGrade}>
+                <input
+                  name="teacherGrade"
+                  value={values.teacherGrade}
+                  onChange={setField}
+                  placeholder={t.teacherGradePlaceholder}
+                  className={inputClass}
+                />
+              </Field>
+            </>
+          )}
+
+          {!(
+            values.role === "TEACHER" && values.teacherType === "PART_TIME"
+          ) && (
+            <Field label={t.monthlySalary} hint={t.monthlySalaryHint}>
+              <input
+                type="number"
+                min="0"
+                step="1"
+                name="monthlySalary"
+                value={values.monthlySalary}
+                onChange={setField}
+                className={inputClass}
+              />
+            </Field>
+          )}
         </div>
       </Section>
 

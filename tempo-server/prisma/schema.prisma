@@ -16,6 +16,11 @@ enum Role {
   CUSTOMER
 }
 
+enum TeacherType {
+  FULL_TIME
+  PART_TIME
+}
+
 enum ZoneType {
   RECEPTION
   SHOWROOM
@@ -38,6 +43,9 @@ model User {
   phone               String?
   lineId              String?
   role                Role        @default(STAFF)
+  teacherType         TeacherType?
+  teacherGrade        String?
+  monthlySalary       Int?
   isActive            Boolean     @default(true)
   mustChangePassword  Boolean     @default(false)
   createdAt           DateTime    @default(now())
@@ -111,4 +119,40 @@ model Zone {
   @@index([branchId])
   @@index([parentId])
   @@map("zones")
+}
+
+enum CourseClassType {
+  PRIVATE
+  GROUP
+}
+
+model Course {
+  id                  String  @id @default(cuid())
+  code                String  @unique
+  parentId            String?
+  nameTh              String
+  nameEn              String
+  descriptionTh       String[]  @default([])
+  descriptionEn       String[]  @default([])
+  classType           CourseClassType @default(PRIVATE)
+  totalLessons        Int?
+  lessonDurationMin   Int?
+  tuitionFee          Int?
+  fulltimeTeachingFee Int?
+  parttimeTeachingFee Int?
+  isHighlighted       Boolean   @default(false)
+  sortOrder           Int       @default(999)
+  textbookId          String[]  @default([])
+  isActive            Boolean   @default(true)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  createdById         String
+  updatedById         String
+
+  parent              Course?   @relation("CourseHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
+  subCourses          Course[]  @relation("CourseHierarchy")
+
+  @@index([parentId])
+  @@index([isHighlighted, sortOrder])
+  @@map("courses")
 }

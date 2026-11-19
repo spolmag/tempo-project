@@ -5,7 +5,11 @@ import {
   setUserActive,
   resetUserPassword,
 } from "../../../services/adminUsers.js";
-import { roleLabel, userName } from "../../../lib/userLabels.js";
+import {
+  roleLabel,
+  teacherTypeLabel,
+  userName,
+} from "../../../lib/userLabels.js";
 import { getFormError } from "../../../lib/userErrors.js";
 import ActionModal from "../../../components/ActionModal.jsx";
 
@@ -323,7 +327,13 @@ export default function UserListPage({ lang, user: me }) {
                       <p className="text-xs text-slate-500">{u.email}</p>
                     </td>
                     <td className="px-5 py-4 text-slate-300">
-                      {roleLabel(u.role, lang)}
+                      <p>{roleLabel(u.role, lang)}</p>
+                      {u.role === "TEACHER" && u.teacherType && (
+                        <p className="text-xs text-amber-400/90 mt-0.5">
+                          {teacherTypeLabel(u.teacherType, lang)}
+                          {u.teacherGrade ? ` • ${u.teacherGrade}` : ""}
+                        </p>
+                      )}
                     </td>
                     <td className="px-5 py-4">
                       <span

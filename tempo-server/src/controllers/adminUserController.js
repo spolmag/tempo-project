@@ -4,6 +4,7 @@ import prisma from "../lib/prisma.js";
 // Global roles that can be given from the staff portal for now.
 // Must match values in Role enum. Students/parents come later.
 const ALLOWED_ROLES = ["ADMIN", "MANAGER", "STAFF", "TEACHER"];
+const TEACHER_TYPES = ["FULL_TIME", "PART_TIME"];
 
 // Response back fieldes without password hash
 const USER_SELECT = {
@@ -18,6 +19,9 @@ const USER_SELECT = {
   phone: true,
   lineId: true,
   role: true,
+  teacherType: true,
+  teacherGrade: true,
+  monthlySalary: true,
   isActive: true,
   mustChangePassword: true,
   createdAt: true,
@@ -37,6 +41,7 @@ const OPTIONAL_TEXT_FIELDS = [
   "taxId",
   "phone",
   "lineId",
+  "teacherGrade",
 ];
 
 const SERVER_ERROR = { message: "Something went wrong, please try again." };
@@ -97,6 +102,42 @@ function readUserInput(body = {}, { partial = false } = {}) {
         error: { code: "INVALID_DATE" },
       };
     }
+  }
+
+  // Teacher type (FULL_TIME | PART_TIME)
+  if (has("teacherType")) {
+    const tt = clean(body.teacherType);
+    if (tt && !TEACHER_TYPES.includes(tt)) {
+      return { err: { code: "INVALID_TEACHER_TYPE" } };
+    }
+    data.teacherType = tt;
+  }
+
+  // Optional monthlySalary (whole number >= 0, or "" / null to clear)
+  if (has("monthlySalary")) {
+    const raw = body.monthlySalary;
+    if (raw === null || raw === "" || raw === undefined) {
+      data.monthlySalary = null;
+    } else {
+      const num = Number(raw);
+      if (!Number.isInteger(num) || num < 0) {
+        return { error: { code: "INVALID_SALARY" } };
+      }
+      data.monthlySalary = num;
+    }
+  }
+
+  // If role is explicitly set to non-teacher, clear teacher-only fields
+  if (data.role && data.role !== "TEACHER") {
+    data.teacherType = null;
+    data.teacherGrade = null;
+  } else if (data.role === "TEACHER" && !partial && !data.teacherType) {
+    return { error: { code: "MISSING_TEACHER_TYPE" } };
+  }
+
+  // Part-time teacher do not have a fixed minthly salary
+  if (data.teacherType === "PART_TIME") {
+    data.monthlySalary = null;
   }
 
   return { data };
