@@ -126,6 +126,17 @@ enum CourseClassType {
   GROUP
 }
 
+enum TuitionFeeUnit {
+  PER_MONTH
+  PER_COURSE
+}
+
+enum TeachingFeeUnit {
+  PER_CLASS
+  PER_STUDENT_CLASS
+  PER_STUDENT_MONTH
+}
+
 model Course {
   id                  String  @id @default(cuid())
   code                String  @unique
@@ -138,11 +149,13 @@ model Course {
   totalLessons        Int?
   lessonDurationMin   Int?
   tuitionFee          Int?
-  fulltimeTeachingFee Int?
-  parttimeTeachingFee Int?
+  tuitionFeeUnit      TuitionFeeUnit  @default(PER_MONTH)
+  fullTimeTeachingFee Int?
+  partTimeTeachingFee Int?
+  teachingFeeUnit     TeachingFeeUnit @default(PER_CLASS)
   isHighlighted       Boolean   @default(false)
   sortOrder           Int       @default(999)
-  textbookId          String[]  @default([])
+  textbookIds         String[]  @default([])
   isActive            Boolean   @default(true)
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt

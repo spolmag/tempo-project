@@ -25,6 +25,13 @@ const CARDS = [
     ready: true,
   },
   {
+    key: "courses",
+    icon: "🎵",
+    to: "/admin/courses",
+    roles: ["ADMIN"],
+    ready: true,
+  },
+  {
     key: "classes",
     icon: "🎹",
     to: "/teacher/classes",
@@ -53,6 +60,10 @@ const TEXT = {
         title: "สาขา-ห้องเรียน-โซน",
         desc: "เพิ่ม, แก้ไขข้อมูลสาขา",
       },
+      courses: {
+        title: "คอร์สเรียน",
+        desc: "เพิ่ม, แก้ไขคอร์สหลัก-คอร์สย่อย ค่าเรียน ค่าสอนครู",
+      },
       classes: {
         title: "คลาสเรียน",
         desc: "ตารางคลาส-รายชื่อนักเรียน",
@@ -77,6 +88,10 @@ const TEXT = {
       branches: {
         title: "Branches-Classrooms-Zones",
         desc: "Add and edit branches, and turn branches on or off.",
+      },
+      courses: {
+        title: "Courses",
+        desc: "Add and edit main courses, sub-courses, tuition fees, and teacher pay rates",
       },
       classes: {
         title: "My class",

@@ -17,6 +17,7 @@ const ROLES = ["ADMIN", "MANAGER", "STAFF", "TEACHER"];
 
 const TEXT = {
   th: {
+    back: "⬅️ กลับไปหน้าจัดการงานสาขา",
     title: "จัดการผู้ใช้งาน",
     add: "➕ เพิ่มผู้ใช้",
     search: "ค้นหาจากชื่อหรืออีเมล",
@@ -69,6 +70,7 @@ const TEXT = {
     },
   },
   en: {
+    back: "⬅️ Back to dashboard",
     title: "User management",
     add: "➕ Add user",
     search: "Search name or email",
@@ -215,7 +217,13 @@ export default function UserListPage({ lang, user: me }) {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+      <Link
+        to="/dashboard"
+        className="text-xs text-slate-400 hover:text-amber-400 transition"
+      >
+        {t.back}
+      </Link>
+      <div className="flex flex-wrap items-center justify-between gap-4 mt-3 mb-6">
         <h1 className="text-2xl font-bold text-slate-100">{t.title}</h1>
         <Link
           to="/admin/users/new"

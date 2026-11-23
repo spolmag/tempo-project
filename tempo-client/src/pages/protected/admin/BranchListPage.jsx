@@ -10,6 +10,7 @@ import ActionModal from "../../../components/ActionModal.jsx";
 
 const TEXT = {
   th: {
+    back: "⬅️ กลับไปหน้าจัดการงานสาขา",
     title: "จัดการสาขา",
     add: "➕ เพิ่มสาขา",
     search: "ค้นหาจากรหัสสาขา-ชื่อสาขา",
@@ -51,6 +52,7 @@ const TEXT = {
     },
   },
   en: {
+    back: "⬅️ Back to dashboard",
     title: "Branch management",
     add: "➕ Add branch",
     search: "Search branch code or name",
@@ -175,7 +177,13 @@ export default function BranchListPage({ lang }) {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+      <Link
+        to="/dashboard"
+        className="text-xs text-slate-400 hover:text-amber-400 transition"
+      >
+        {t.back}
+      </Link>
+      <div className="flex flex-wrap items-center justify-between gap-4 mt-3 mb-6">
         <h1 className="text-2xl font-bold text-slate-100">{t.title}</h1>
         <Link
           to="/admin/branches/new"

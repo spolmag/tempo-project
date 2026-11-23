@@ -1,8 +1,15 @@
+import { TeachingFeeUnit, TuitionFeeUnit } from "@prisma/client";
 import prisma from "../lib/prisma.js";
 
 const COURSE_CODE_REGEX = /^[A-Z0-9_-]{2,20}$/;
 
 const CLASS_TYPES = ["PRIVATE", "GROUP"];
+const TUITION_FEE_UNITS = ["PER_MONTH", "PER_COURSE"];
+const TEACHING_FEE_UNITS = [
+  "PER_CLASS",
+  "PER_STUDENT_CLASS",
+  "PER_STUDENT_MONTH",
+];
 
 const COURSE_SELECT = {
   id: true,
@@ -16,8 +23,10 @@ const COURSE_SELECT = {
   totalLessons: true,
   lessonDurationMin: true,
   tuitionFee: true,
+  tuitionFeeUnit: true,
   fullTimeTeachingFee: true,
   partTimeTeachingFee: true,
+  teachingFeeUnit: true,
   isHighlighted: true,
   sortOrder: true,
   textbookIds: true,
@@ -162,6 +171,22 @@ function readCourseInput(body, { partial = false } = {}) {
     data.partTimeTeachingFee = res.value;
   }
 
+  if (!partial || has("tuitionFeeUnit")) {
+    const unit = clean(body.tuitionFeeUnit) || "PER_MONTH";
+    if (!TUITION_FEE_UNITS.includes(unit)) {
+      return { error: { code: "INVALID_TUITION_FEE_UNIT" } };
+    }
+    data.tuitionFeeUnit = unit;
+  }
+
+  if (!partial || has("teachingFeeUnit")) {
+    const unit = clean(body.teachingFeeUnit) || "PER_CLASS";
+    if (!TEACHING_FEE_UNITS.includes(unit)) {
+      return { error: { code: "INVALID_TEACHING_FEE_UNIT" } };
+    }
+    data.teachingFeeUnit = unit;
+  }
+
   // 8. Highlight flag & Sort Order (default 999)
   if (!partial || has("isHighlighted")) {
     data.isHighlighted = Boolean(body.isHighlighted);
@@ -243,6 +268,8 @@ export async function getCourseFormOptions(req, res) {
 
     res.json({
       classTypes: CLASS_TYPES,
+      tuitionFeeUnit: TUITION_FEE_UNITS,
+      teachingFeeUnit: TEACHING_FEE_UNITS,
       courses,
     });
   } catch (err) {

@@ -78,3 +78,72 @@ export function zoneName(zone, lang = "th") {
   if (!zone) return "-";
   return lang === "th" ? zone.nameTh : zone.nameEn;
 }
+
+export const CLASS_TYPES = ["PRIVATE", "GROUP"];
+
+export const CLASS_TYPE_LABELS = {
+  th: {
+    PRIVATE: "เรียนเดี่ยว",
+    GROUP: "เรียนกลุ่ม",
+  },
+  en: {
+    PRIVATE: "Private Class",
+    GROUP: "Group Class",
+  },
+};
+
+export function classTypeLabel(type, lang = "th") {
+  return CLASS_TYPE_LABELS[lang]?.[type] ?? type;
+}
+
+export function courseName(course, lang = "th") {
+  if (!course) return "-";
+  return lang === "th" ? course.nameTh : course.nameEn;
+}
+
+export const TUITION_FEE_UNITS = ["PER_MONTH", "PER_COURSE"];
+
+export const TUITION_FEE_UNIT_LABELS = {
+  th: {
+    PER_MONTH: "ต่อเดือน",
+    PER_COURSE: "ต่อคอร์ส",
+  },
+  en: {
+    PER_MONTH: "Monthly",
+    PER_COURSE: "One-time",
+  },
+};
+
+export function tuitionFeeUnitLabel(unit, lang = "th") {
+  return TUITION_FEE_UNIT_LABELS[lang]?.[unit] ?? unit;
+}
+
+export const TEACHING_FEE_UNITS = [
+  "PER_CLASS",
+  "PER_STUDENT_CLASS",
+  "PER_STUDENT_MONTH",
+];
+
+export const TEACHING_FEE_UNIT_LABELS = {
+  th: {
+    PER_CLASS: "ต่อคลาส",
+    PER_STUDENT_CLASS: "ต่อหัวนักเรียน / คลาส",
+    PER_STUDENT_MONTH: "ต่อหัวนักเรียน / เดือน",
+  },
+  en: {
+    PER_CLASS: "Per class",
+    PER_STUDENT_CLASS: "Per student / class",
+    PER_STUDENT_MONTH: "Per student / month",
+  },
+};
+
+export function teachingFeeUnitLabel(unit, lang = "th") {
+  return TEACHING_FEE_UNIT_LABELS[lang]?.[unit] ?? unit;
+}
+
+export function formatBaht(amount) {
+  if (amount === null || amount === undefined || amount === "") return null;
+  const num = Number(amount);
+  if (Number.isNaN(num)) return null;
+  return `${num.toLocaleString("en-US")} ฿`;
+}
