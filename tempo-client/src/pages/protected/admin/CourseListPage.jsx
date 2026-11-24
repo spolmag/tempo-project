@@ -36,7 +36,7 @@ const TEXT = {
     colStatus: "สถานะ",
     colActions: "จัดการ",
     mainCourseBadge: "คอร์สหลัก",
-    subCourseOf: "อยู่ภายใต้",
+    subCourseOf: "คอร์สหลัก",
     highlightedBadge: "ไฮไลท์",
     lessonsUnit: "ครั้ง",
     minuteUnit: "นาที / คลาส",
@@ -334,7 +334,7 @@ export default function CourseListPage({ lang }) {
                     }`}
                   >
                     {/* 1. Code */}
-                    <td className="px-5 py-4 font-mono text-xs font-bold text-amber-400">
+                    <td className="px-5 py-4 font-mono text-xs font-bold text-amber-400 whitespace-nowrap">
                       <span
                         style={{ paddingLeft: `${c.depth * 20}px` }}
                         className={isSub ? "text-amber-300/85" : ""}
@@ -357,7 +357,7 @@ export default function CourseListPage({ lang }) {
                       </div>
                       <p className="text-xs text-slate-500 mt-0.5">
                         {c.parent
-                          ? `${t.subCourseOf}: ${c.parent.code} (${courseName(c.parent, lang)})`
+                          ? `${t.subCourseOf}: ${courseName(c.parent, lang)}`
                           : t.mainCourseBadge}
                       </p>
                     </td>
@@ -365,7 +365,7 @@ export default function CourseListPage({ lang }) {
                     {/* 3. Format & Lessons */}
                     <td className="px-5 py-4 text-slate-300">
                       <p>{classTypeLabel(c.classType, lang)}</p>
-                      {(c.totalLessons || c.lessonDuretionMin) && (
+                      {/* {(c.totalLessons || c.lessonDurationMin) && (
                         <p className="text-xs text-slate-500 mt-0.5">
                           {c.totalLessons
                             ? `${c.totalLessons} ${t.lessonsUnit}`
@@ -375,7 +375,7 @@ export default function CourseListPage({ lang }) {
                             ? `${c.lessonDurationMin} ${t.minuteUnit}`
                             : ""}
                         </p>
-                      )}
+                      )} */}
                     </td>
 
                     {/* 4. Tuition fee & Billing Cycle */}

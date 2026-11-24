@@ -1,7 +1,7 @@
 // Compare two tree items: highlighted first, then sortOrder (default 999), then code
 function compareNodes(a, b) {
-  if (Boolean(a.isHilighted) !== Boolean(b.isHilighted)) {
-    return a.isHilighted ? -1 : 1;
+  if (Boolean(a.isHighlighted) !== Boolean(b.isHilighted)) {
+    return a.isHighlighted ? -1 : 1;
   }
   const orderA = a.sortOrder ?? 999;
   const orderB = b.sortOrder ?? 999;
