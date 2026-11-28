@@ -169,3 +169,42 @@ model Course {
   @@index([isHighlighted, sortOrder])
   @@map("courses")
 }
+
+enum ProductCategory {
+  TEXTBOOK
+  INSTRUMENT
+  ACCESSORY
+  OTHER
+}
+
+model Product {
+  id                  String  @id @default(cuid())
+  code                String  @unique
+  barcode             String? @unique
+  parentId            String?
+  category            ProductCategory @default(TEXTBOOK)
+  nameTh              String
+  nameEn              String
+  descriptionTh       String[]  @default([])
+  descriptionEn       String[]  @default([])
+  unitTh              String  @default("ชิ้น")
+  unitEn              String  @default("pcs")
+  costPrice           Decimal?  @db.Decimal(10, 2)
+  sellingPrice        Decimal?  @db.Decimal(10, 2)
+  isVat               Boolean @default(false)
+  isHighlighted       Boolean @default(false)
+  sortOrder           Int @default(999)
+  isActive            Boolean @default(true)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  createdById         String
+  updatedById         String
+
+  parent              Product?  @relation("ProductHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
+  subProducts         Product[] @relation("ProductHierarchy")
+
+  @@index([category])
+  @@index([parentId])
+  @@index([isHighlighted, sortOrder])
+  @@map("products")
+}

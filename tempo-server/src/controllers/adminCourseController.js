@@ -248,32 +248,69 @@ async function validateParentCourse({ parentId, currentCourseId = null }) {
 // GET /api/admin/courses/options
 export async function getCourseFormOptions(req, res) {
   try {
-    const courses = await prisma.course.findMany({
-      where: { isActive: true },
-      orderBy: [
-        { isHighlighted: "desc" },
-        { sortOrder: "asc" },
-        { code: "asc" },
-      ],
-      select: {
-        id: true,
-        code: true,
-        parentId: true,
-        nameTh: true,
-        nameEn: true,
-        isHighlighted: true,
-        sortOrder: true,
-      },
-    });
+    const [courses, rawTextbooks] = await Promise.all([
+      prisma.course.findMany({
+        where: { isActive: true },
+        orderBy: [
+          { isHighlighted: "desc" },
+          { sortOrder: "asc" },
+          { code: "asc" },
+        ],
+        select: {
+          id: true,
+          code: true,
+          parentId: true,
+          nameTh: true,
+          nameEn: true,
+          isHighlighted: true,
+          sortOrder: true,
+        },
+      }),
+      prisma.product.findMany({
+        where: {
+          category: "TEXTBOOK",
+          isActive: true,
+        },
+        orderBy: [
+          { isHighlighted: "desc" },
+          { sortOrder: "asc" },
+          { code: "asc" },
+        ],
+        select: {
+          id: true,
+          code: true,
+          barcode: true,
+          parentId: true,
+          nameTh: true,
+          nameEn: true,
+          sellingPrice: true,
+          isVat: true,
+          unitTh: true,
+          unitEn: true,
+          isHighlighted: true,
+          sortOrder: true,
+        },
+      }),
+    ]);
+
+    const textbooks = rawTextbooks.map((book) => ({
+      ...book,
+      sellingPrice:
+        book.sellingPrice !== null && book.sellingPrice !== undefined
+          ? Number(book.sellingPrice)
+          : null,
+    }));
 
     res.json({
       classTypes: CLASS_TYPES,
       tuitionFeeUnit: TUITION_FEE_UNITS,
       teachingFeeUnit: TEACHING_FEE_UNITS,
+      vatRate: Number(process.env.VAT_RATE ?? 7),
       courses,
+      textbooks,
     });
   } catch (err) {
-    console.error("getCourseFormOptions error:", err);
+    console.error("getCourseFormOptions error", err);
     res.status(500).json({ code: "SERVER_ERROR" });
   }
 }
